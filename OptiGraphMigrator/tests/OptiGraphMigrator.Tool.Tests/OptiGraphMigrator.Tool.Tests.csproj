@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<TargetFramework>net10.0</TargetFramework>
+	<IsPackable>false</IsPackable>
+	<IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+	<PackageReference Include="Microsoft.NET.Test.Sdk" />
+	<PackageReference Include="xunit" VersionOverride="2.4.1" />
+	<PackageReference Include="xunit.assert" VersionOverride="2.4.1" />
+	<PackageReference Include="xunit.runner.visualstudio" />
+	<PackageReference Include="Microsoft.Build.Locator" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<ProjectReference Include="..\..\src\OptiGraphMigrator.Core\OptiGraphMigrator.Core.csproj" />
+	<ProjectReference Include="..\..\src\OptiGraphMigrator.Reporting\OptiGraphMigrator.Reporting.csproj" />
+	<ProjectReference Include="..\..\src\OptiGraphMigrator.Tool\OptiGraphMigrator.Tool.csproj" />
+	<ProjectReference Include="..\..\samples\EPiServer.Find.Stubs\EPiServer.Find.Stubs.csproj" ReferenceOutputAssembly="false" />
+	<ProjectReference Include="..\..\samples\SampleFindSolution\SampleFindSolution.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+</Project>

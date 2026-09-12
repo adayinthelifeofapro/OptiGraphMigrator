@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<TargetFramework>netstandard2.0</TargetFramework>
+	<RootNamespace>OptiGraphMigrator.CodeFixes</RootNamespace>
+	<AssemblyName>OptiGraphMigrator.CodeFixes</AssemblyName>
+	<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+	<IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+	<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="all" />
+	<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<ProjectReference Include="..\OptiGraphMigrator.Core\OptiGraphMigrator.Core.csproj" />
+	<ProjectReference Include="..\OptiGraphMigrator.Analyzers\OptiGraphMigrator.Analyzers.csproj" />
+  </ItemGroup>
+
+</Project>

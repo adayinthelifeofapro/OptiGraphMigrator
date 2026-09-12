@@ -1,0 +1,25 @@
+# OptiGraphMigrator report
+
+0 error(s), 1 warning(s), 1 info
+
+- Exact (auto-fixable): 1
+- Caveat (needs review): 0
+- Blocked (no clean translation): 1
+
+## Top blocking patterns
+
+| Rule | Title | Occurrences |
+|---|---|---|
+| OGM202 | Custom scoring has no Graph equivalent | 1 |
+
+## Findings
+
+| Severity | Rule | Location | Message | Graph equivalent |
+|---|---|---|---|---|
+| warning | OGM001 | FindUsageSamples.cs(10,5) | Find 'Filter(...)' can be translated to a Graph 'where' clause | `where` |
+
+  ```graphql
+  { where: { title: { eq: "foo" } } }
+  ```
+
+| info | OGM202 | FindUsageSamples.cs(20,8) | Find custom scoring 'Boost(...)' has no clean Graph SDK translation |  |

@@ -1,0 +1,677 @@
+{
+  "schemaVersion": 1,
+  "rules": [
+    {
+      "id": "OGM001",
+      "title": "Filter(...) maps to Graph where(...)",
+      "severity": "warning",
+      "category": "filtering",
+      "translatability": "exact",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.Api.Querying.FilterExtensions",
+        "methodName": "Filter",
+        "minArguments": 1,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": ".Where(x => <translated predicate>)",
+      "graphQlSnippetTemplate": "where: {{ {0} }}",
+      "caveats": [
+        "Find's Filter() predicates are evaluated server-side against the index; confirm the equivalent Graph 'where' clause targets the matching indexed field name."
+      ],
+      "messageFormat": "Find '{0}(...)' can be translated to a Graph 'where' clause",
+      "isAutoFixable": true
+    },
+    {
+      "id": "OGM002",
+      "title": "For(text) maps to Graph query(...)",
+      "severity": "warning",
+      "category": "query",
+      "translatability": "exact",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.Api.Querying.ITypeSearchExtensions",
+        "methodName": "For",
+        "minArguments": 1,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": ".Where(x => x.SearchText().Match(\"<text>\"))",
+      "graphQlSnippetTemplate": "where: {{ _fulltext: {{ match: \"{0}\" }} }}",
+      "caveats": [
+        "Find's For() applies BM25-style free text ranking across all indexed fields; Graph's full text match may rank results differently."
+      ],
+      "messageFormat": "Find '{0}(...)' can be translated to a Graph full text query",
+      "isAutoFixable": false
+    },
+    {
+      "id": "OGM003",
+      "title": "OrderBy(...) maps to Graph orderBy(...)",
+      "severity": "warning",
+      "category": "query",
+      "translatability": "exact",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.Api.Querying.OrderByExtensions",
+        "methodName": "OrderBy",
+        "minArguments": 1,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": ".OrderBy(x => <field>)",
+      "graphQlSnippetTemplate": "orderBy: {{ {0}: ASC }}",
+      "caveats": [],
+      "messageFormat": "Find '{0}(...)' can be translated to a Graph 'orderBy' clause",
+      "isAutoFixable": false
+    },
+    {
+      "id": "OGM004",
+      "title": "OrderByDescending(...) maps to Graph orderBy(...)",
+      "severity": "warning",
+      "category": "query",
+      "translatability": "exact",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.Api.Querying.OrderByExtensions",
+        "methodName": "OrderByDescending",
+        "minArguments": 1,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": ".OrderByDescending(x => <field>)",
+      "graphQlSnippetTemplate": "orderBy: {{ {0}: DESC }}",
+      "caveats": [],
+      "messageFormat": "Find '{0}(...)' can be translated to a Graph 'orderBy' clause",
+      "isAutoFixable": false
+    },
+    {
+      "id": "OGM005",
+      "title": "ThenBy(...) maps to Graph orderBy(...) secondary sort",
+      "severity": "warning",
+      "category": "query",
+      "translatability": "exact",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.Api.Querying.OrderByExtensions",
+        "methodName": "ThenBy",
+        "minArguments": 1,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": ".ThenBy(x => <field>)",
+      "graphQlSnippetTemplate": "orderBy: {{ {0}: ASC }}",
+      "caveats": [
+        "Graph orderBy composes multiple fields in declaration order; verify tie-break order matches the Find ThenBy chain."
+      ],
+      "messageFormat": "Find '{0}(...)' can be translated to a secondary Graph 'orderBy' field",
+      "isAutoFixable": false
+    },
+    {
+      "id": "OGM006",
+      "title": "Skip(...) maps to Graph skip(...)",
+      "severity": "info",
+      "category": "query",
+      "translatability": "exact",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.Api.Querying.ITypeSearchExtensions",
+        "methodName": "Skip",
+        "minArguments": 1,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": ".Skip(<count>)",
+      "graphQlSnippetTemplate": "skip: {0}",
+      "caveats": [],
+      "messageFormat": "Find '{0}(...)' can be translated to a Graph 'skip' argument",
+      "isAutoFixable": false
+    },
+    {
+      "id": "OGM007",
+      "title": "Take(...) maps to Graph limit(...)",
+      "severity": "info",
+      "category": "query",
+      "translatability": "exact",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.Api.Querying.ITypeSearchExtensions",
+        "methodName": "Take",
+        "minArguments": 1,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": ".Take(<count>)",
+      "graphQlSnippetTemplate": "limit: {0}",
+      "caveats": [],
+      "messageFormat": "Find '{0}(...)' can be translated to a Graph 'limit' argument",
+      "isAutoFixable": false
+    },
+    {
+      "id": "OGM008",
+      "title": "Select(...) projection maps to Graph selection set",
+      "severity": "warning",
+      "category": "projection",
+      "translatability": "caveat",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.Api.Querying.SelectExtensions",
+        "methodName": "Select",
+        "minArguments": 1,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": "GraphQL selection set listing only the required fields",
+      "graphQlSnippetTemplate": "items {{ {0} }}",
+      "caveats": [
+        "Find's in-memory Select() projection can call arbitrary .NET code; only property-access projections translate directly to a GraphQL selection set.",
+        "Confirm the projected properties are exposed on the Graph content type before relying on the generated snippet."
+      ],
+      "messageFormat": "Find '{0}(...)' can be translated to a Graph selection set for simple property projections",
+      "isAutoFixable": false
+    },
+    {
+      "id": "OGM009",
+      "title": "Track() analytics call has no Graph SDK equivalent",
+      "severity": "error",
+      "category": "statistics",
+      "translatability": "blocked",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.ClientExtensions",
+        "methodName": "Track",
+        "minArguments": 0,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": "",
+      "graphQlSnippetTemplate": "",
+      "caveats": [
+        "Optimizely Graph has no built-in search analytics/tracking pipeline equivalent to Find's Track(). Statistics must be captured with a separate telemetry solution."
+      ],
+      "messageFormat": "Find '{0}(...)' has no clean Graph SDK translation; search analytics must be re-implemented separately",
+      "isAutoFixable": false
+    },
+    {
+      "id": "OGM010",
+      "title": "StaticallyCacheFor(...) maps to Graph client-side caching",
+      "severity": "warning",
+      "category": "query",
+      "translatability": "caveat",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.Api.Querying.CacheExtensions",
+        "methodName": "StaticallyCacheFor",
+        "minArguments": 1,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": "Cache the GraphQL response in the calling application (for example via IMemoryCache) for an equivalent duration",
+      "graphQlSnippetTemplate": "",
+      "caveats": [
+        "Optimizely Graph does not provide Find's built-in response caching; the caching duration and invalidation must be re-implemented in the consuming application."
+      ],
+      "messageFormat": "Find '{0}(...)' has no built-in Graph SDK equivalent; caching must be implemented by the caller",
+      "isAutoFixable": false
+    },
+    {
+      "id": "OGM011",
+      "title": "FilterForVisitor() personalization maps to Graph visitor group filtering",
+      "severity": "warning",
+      "category": "filtering",
+      "translatability": "caveat",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.Cms.SearchExtensions",
+        "methodName": "FilterForVisitor",
+        "minArguments": 0,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": ".Where(x => <visitor group / access control fields>)",
+      "graphQlSnippetTemplate": "where: {{ {0} }}",
+      "caveats": [
+        "FilterForVisitor() combines access rights, publish status and visitor-group targeting; each dimension must be re-expressed as an explicit Graph 'where' clause against the indexed fields."
+      ],
+      "messageFormat": "Find '{0}(...)' can be translated to explicit Graph 'where' clauses, but requires manual review",
+      "isAutoFixable": false
+    },
+    {
+      "id": "OGM012",
+      "title": "GetContentResult() maps to a Graph query execution",
+      "severity": "info",
+      "category": "query",
+      "translatability": "exact",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.Cms.SearchContentExtensions",
+        "methodName": "GetContentResult",
+        "minArguments": 0,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": "await client.<ContentType>.GetAsync()",
+      "graphQlSnippetTemplate": "query {{ {0} }}",
+      "caveats": [
+        "Find returns hydrated IContent instances synchronously; the Graph SDK client is async and returns DTOs shaped by the selection set, not full IContent objects."
+      ],
+      "messageFormat": "Find '{0}()' can be translated to executing the equivalent Graph query",
+      "isAutoFixable": false
+    },
+    {
+      "id": "OGM013",
+      "title": "GetFacets(...) maps to Graph facets query",
+      "severity": "warning",
+      "category": "projection",
+      "translatability": "caveat",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.Api.Querying.FacetExtensions",
+        "methodName": "GetFacets",
+        "minArguments": 1,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": "facets { <field> { name, count } }",
+      "graphQlSnippetTemplate": "facets {{ {0} {{ name count }} }}",
+      "caveats": [
+        "Find's facet API returns bucket counts computed against the search index; confirm the equivalent Graph facet field is configured as filterable/facetable in the schema."
+      ],
+      "messageFormat": "Find '{0}(...)' can be translated to a Graph facets selection",
+      "isAutoFixable": false
+    },
+    {
+      "id": "OGM014",
+      "title": "Highlight(...) maps to Graph highlight selection",
+      "severity": "warning",
+      "category": "projection",
+      "translatability": "caveat",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.Api.Querying.HighlightExtensions",
+        "methodName": "Highlight",
+        "minArguments": 1,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": "_fulltext { highlight(field: \"<field>\") }",
+      "graphQlSnippetTemplate": "highlight: {{ field: \\\"{0}\\\" }}",
+      "caveats": [
+        "Graph's highlighting output format and snippet boundaries differ from Find's; verify the rendered highlight markers match the previous UI expectations."
+      ],
+      "messageFormat": "Find '{0}(...)' can be translated to a Graph highlight selection",
+      "isAutoFixable": false
+    },
+    {
+      "id": "OGM015",
+      "title": "Range(...) maps to Graph range filter",
+      "severity": "warning",
+      "category": "filtering",
+      "translatability": "exact",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.Api.Querying.RangeExtensions",
+        "methodName": "Range",
+        "minArguments": 3,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": ".Where(x => <field> >= <from> && x.<field> <= <to>)",
+      "graphQlSnippetTemplate": "where: {{ {0}: {{ gte: \\\"<from>\\\", lte: \\\"<to>\\\" }} }}",
+      "caveats": [
+        "Confirm the range boundaries (inclusive/exclusive) match between Find's Range() semantics and the generated Graph 'where' comparison operators."
+      ],
+      "messageFormat": "Find '{0}(...)' can be translated to a Graph range 'where' clause",
+      "isAutoFixable": false
+    },
+    {
+      "id": "OGM016",
+      "title": "Language(...) maps to Graph language selector",
+      "severity": "warning",
+      "category": "query",
+      "translatability": "caveat",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.Api.Querying.LanguageExtensions",
+        "methodName": "Language",
+        "minArguments": 1,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": ".Where(x => x.Language().Equal(\"<languageCode>\"))",
+      "graphQlSnippetTemplate": "where: {{ Language: {{ eq: \\\"{0}\\\" }} }}",
+      "caveats": [
+        "Find applies language-specific analysis/stemming per query; Graph language filtering is a field match and does not automatically re-run language-aware analysis."
+      ],
+      "messageFormat": "Find '{0}(...)' can be translated to a Graph language 'where' clause, but requires manual review",
+      "isAutoFixable": false
+    },
+    {
+      "id": "OGM017",
+      "title": "TotalMatching() maps to Graph total count field",
+      "severity": "info",
+      "category": "query",
+      "translatability": "exact",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.Api.Querying.TotalMatchingExtensions",
+        "methodName": "TotalMatching",
+        "minArguments": 0,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": "result.TotalMatching",
+      "graphQlSnippetTemplate": "totalCount",
+      "caveats": [],
+      "messageFormat": "Find '{0}()' can be translated to the Graph 'totalCount' selection field",
+      "isAutoFixable": false
+    },
+    {
+      "id": "OGM018",
+      "title": "BestBets(...) has no direct Graph equivalent",
+      "severity": "error",
+      "category": "query",
+      "translatability": "blocked",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.Api.Querying.PromotedExtensions",
+        "methodName": "BestBets",
+        "minArguments": 1,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": "",
+      "graphQlSnippetTemplate": "",
+      "caveats": [
+        "Optimizely Graph has no built-in editorial promotions/best-bets pinning feature. Pinned results must be re-implemented in application code by merging curated content ahead of the Graph result set."
+      ],
+      "messageFormat": "Find '{0}(...)' has no clean Graph SDK translation; editorial best bets must be re-implemented separately",
+      "isAutoFixable": false
+    },
+    {
+      "id": "OGM019",
+      "title": "DidYouMean()/Autocomplete() have no direct Graph equivalent",
+      "severity": "error",
+      "category": "query",
+      "translatability": "blocked",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.Api.Querying.SuggestExtensions",
+        "methodName": "DidYouMean",
+        "minArguments": 1,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": "",
+      "graphQlSnippetTemplate": "",
+      "caveats": [
+        "Optimizely Graph does not provide a built-in spelling-suggestion or autocomplete API equivalent to Find's DidYouMean()/Autocomplete(). A separate suggestion index or third-party service is required."
+      ],
+      "messageFormat": "Find '{0}(...)' has no clean Graph SDK translation; suggestion/autocomplete features must be re-implemented separately",
+      "isAutoFixable": false
+    },
+    {
+      "id": "OGM020",
+      "title": "Autocomplete() has no direct Graph equivalent",
+      "severity": "error",
+      "category": "query",
+      "translatability": "blocked",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.Api.Querying.SuggestExtensions",
+        "methodName": "Autocomplete",
+        "minArguments": 1,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": "",
+      "graphQlSnippetTemplate": "",
+      "caveats": [
+        "Optimizely Graph does not provide a built-in autocomplete/type-ahead API equivalent to Find's Autocomplete(). A separate suggestion index or third-party service is required."
+      ],
+      "messageFormat": "Find '{0}(...)' has no clean Graph SDK translation; autocomplete features must be re-implemented separately",
+      "isAutoFixable": false
+    },
+    {
+      "id": "OGM021",
+      "title": "DistanceFrom(...) geo/spatial filter has no direct Graph equivalent",
+      "severity": "error",
+      "category": "filtering",
+      "translatability": "blocked",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.Api.Querying.GeoExtensions",
+        "methodName": "DistanceFrom",
+        "minArguments": 1,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": "",
+      "graphQlSnippetTemplate": "",
+      "caveats": [
+        "Optimizely Graph does not currently expose geo/spatial distance filtering or sorting equivalent to Find's DistanceFrom(). Location-based search must be re-implemented with a separate geo index or post-filtering in application code."
+      ],
+      "messageFormat": "Find '{0}(...)' has no clean Graph SDK translation; geo/spatial search must be re-implemented separately",
+      "isAutoFixable": false
+    },
+    {
+      "id": "OGM022",
+      "title": "GetContentResultAsync() maps to an async Graph query execution",
+      "severity": "info",
+      "category": "query",
+      "translatability": "exact",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.Cms.SearchContentExtensions",
+        "methodName": "GetContentResultAsync",
+        "minArguments": 0,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": "await client.<ContentType>.GetAsync()",
+      "graphQlSnippetTemplate": "query {{ {0} }}",
+      "caveats": [
+        "Find returns hydrated IContent instances asynchronously; the Graph SDK client is also async but returns DTOs shaped by the selection set, not full IContent objects."
+      ],
+      "messageFormat": "Find '{0}()' can be translated to an awaited Graph query execution",
+      "isAutoFixable": false
+    },
+    {
+      "id": "OGM023",
+      "title": "MoreLikeThis(...) similarity query has no direct Graph equivalent",
+      "severity": "error",
+      "category": "query",
+      "translatability": "blocked",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.Api.Querying.SimilarityExtensions",
+        "methodName": "MoreLikeThis",
+        "minArguments": 1,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": "",
+      "graphQlSnippetTemplate": "",
+      "caveats": [
+        "Optimizely Graph does not expose a built-in 'more like this' / content-similarity query. Related-content recommendations must be re-implemented with a separate recommendation service or a hand-rolled 'where' clause approximating similarity on indexed fields (e.g. shared tags/categories)."
+      ],
+      "messageFormat": "Find '{0}(...)' has no clean Graph SDK translation; content-similarity queries must be re-implemented separately",
+      "isAutoFixable": false
+    },
+    {
+      "id": "OGM024",
+      "title": "Search<T>(CultureInfo) language-scoped query root requires manual review",
+      "severity": "warning",
+      "category": "query",
+      "translatability": "caveat",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.IClient",
+        "methodName": "Search",
+        "minArguments": 1,
+        "maxArguments": 1,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": ".Where(x => x.Language().Equal(\"<languageCode>\"))",
+      "graphQlSnippetTemplate": "where: {{ Language: {{ eq: \\\"{0}\\\" }} }}",
+      "caveats": [
+        "Find's Search<T>(CultureInfo) scopes the query root to a single language variant of the index. Graph does not accept a culture argument on the query root; the equivalent language scoping must be expressed as an explicit 'where' clause against the content's language field."
+      ],
+      "messageFormat": "Find '{0}(CultureInfo)' can be translated to a Graph language 'where' clause on the query, but requires manual review",
+      "isAutoFixable": false
+    },
+    {
+      "id": "OGM025",
+      "title": "RemoveDuplicates() deduplication has no direct Graph equivalent",
+      "severity": "error",
+      "category": "query",
+      "translatability": "blocked",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.Api.Querying.DeduplicationExtensions",
+        "methodName": "RemoveDuplicates",
+        "minArguments": 1,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": "",
+      "graphQlSnippetTemplate": "",
+      "caveats": [
+        "Optimizely Graph queries do not support field-based result deduplication like Find's RemoveDuplicates(). Equivalent behaviour must be implemented by grouping/distinct-ing results in application code after the query executes."
+      ],
+      "messageFormat": "Find '{0}(...)' has no clean Graph SDK translation; result deduplication must be re-implemented separately",
+      "isAutoFixable": false
+    },
+    {
+      "id": "OGM026",
+      "title": "MinScore(...) relevance threshold has no direct Graph equivalent",
+      "severity": "error",
+      "category": "query",
+      "translatability": "blocked",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.Api.Querying.ScoreExtensions",
+        "methodName": "MinScore",
+        "minArguments": 1,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": "",
+      "graphQlSnippetTemplate": "",
+      "caveats": [
+        "Optimizely Graph does not expose the raw relevance score used by Find's MinScore()/RemoveMatchScoreThreshold(), so a query cannot filter on it directly. Consider filtering results in application code, or re-approximating the cutoff with an explicit 'where' clause on indexed fields."
+      ],
+      "messageFormat": "Find '{0}(...)' has no clean Graph SDK translation; relevance-score thresholds must be re-implemented separately",
+      "isAutoFixable": false
+    },
+    {
+      "id": "OGM027",
+      "title": "MatchContained(...) content-tree ancestor filter maps to Graph ancestor 'where' clause",
+      "severity": "warning",
+      "category": "filtering",
+      "translatability": "caveat",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.Cms.ContentTreeExtensions",
+        "methodName": "MatchContained",
+        "minArguments": 1,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": ".Where(x => x.Ancestors().Match(\"<contentReference>\"))",
+      "graphQlSnippetTemplate": "where: {{ Ancestors: {{ in: [\\\"{0}\\\"] }} }}",
+      "caveats": [
+        "Find's MatchContained() filters by the content tree ancestor path stored in its index. Graph exposes ancestor/parent information with a different field name and shape, so confirm the equivalent 'where' clause targets the correct Graph ancestor field before relying on the generated snippet."
+      ],
+      "messageFormat": "Find '{0}(...)' can be translated to a Graph ancestor 'where' clause, but requires manual review",
+      "isAutoFixable": false
+    },
+    {
+      "id": "OGM028",
+      "title": "ForVisitorGroup(...) personalization maps to Graph visitor group filtering",
+      "severity": "warning",
+      "category": "filtering",
+      "translatability": "caveat",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.Cms.SearchExtensions",
+        "methodName": "ForVisitorGroup",
+        "minArguments": 1,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": ".Where(x => <visitor group targeting fields>)",
+      "graphQlSnippetTemplate": "where: {{ {0} }}",
+      "caveats": [
+        "ForVisitorGroup() scopes results to a specific visitor group's personalization rules. Each targeting dimension must be re-expressed as an explicit Graph 'where' clause against the indexed fields, the same way as the parameterless FilterForVisitor() overload (see OGM011)."
+      ],
+      "messageFormat": "Find '{0}(...)' can be translated to explicit Graph 'where' clauses, but requires manual review",
+      "isAutoFixable": false
+    },
+    {
+      "id": "OGM029",
+      "title": "AverageOf/SumOf/MaximumOf/MinimumOf statistical aggregation has no direct Graph equivalent",
+      "severity": "error",
+      "category": "query",
+      "translatability": "blocked",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.Api.Querying.StatisticsExtensions",
+        "methodName": "AverageOf",
+        "minArguments": 1,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": "",
+      "graphQlSnippetTemplate": "",
+      "caveats": [
+        "Optimizely Graph does not expose server-side numeric aggregation (average/sum/min/max) over a field the way Find's AverageOf()/SumOf()/MaximumOf()/MinimumOf() do. Equivalent aggregates must be computed in application code after retrieving the matching results, or via a separate reporting/analytics data store."
+      ],
+      "messageFormat": "Find '{0}(...)' has no clean Graph SDK translation; numeric aggregation must be re-implemented separately",
+      "isAutoFixable": false
+    },
+    {
+      "id": "OGM030",
+      "title": "AverageOf/SumOf/MaximumOf/MinimumOf statistical aggregation has no direct Graph equivalent",
+      "severity": "error",
+      "category": "query",
+      "translatability": "blocked",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.Api.Querying.StatisticsExtensions",
+        "methodName": "SumOf",
+        "minArguments": 1,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": "",
+      "graphQlSnippetTemplate": "",
+      "caveats": [
+        "Optimizely Graph does not expose server-side numeric aggregation (average/sum/min/max) over a field the way Find's AverageOf()/SumOf()/MaximumOf()/MinimumOf() do. Equivalent aggregates must be computed in application code after retrieving the matching results, or via a separate reporting/analytics data store."
+      ],
+      "messageFormat": "Find '{0}(...)' has no clean Graph SDK translation; numeric aggregation must be re-implemented separately",
+      "isAutoFixable": false
+    },
+    {
+      "id": "OGM031",
+      "title": "AverageOf/SumOf/MaximumOf/MinimumOf statistical aggregation has no direct Graph equivalent",
+      "severity": "error",
+      "category": "query",
+      "translatability": "blocked",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.Api.Querying.StatisticsExtensions",
+        "methodName": "MaximumOf",
+        "minArguments": 1,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": "",
+      "graphQlSnippetTemplate": "",
+      "caveats": [
+        "Optimizely Graph does not expose server-side numeric aggregation (average/sum/min/max) over a field the way Find's AverageOf()/SumOf()/MaximumOf()/MinimumOf() do. Equivalent aggregates must be computed in application code after retrieving the matching results, or via a separate reporting/analytics data store."
+      ],
+      "messageFormat": "Find '{0}(...)' has no clean Graph SDK translation; numeric aggregation must be re-implemented separately",
+      "isAutoFixable": false
+    },
+    {
+      "id": "OGM032",
+      "title": "AverageOf/SumOf/MaximumOf/MinimumOf statistical aggregation has no direct Graph equivalent",
+      "severity": "error",
+      "category": "query",
+      "translatability": "blocked",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.Api.Querying.StatisticsExtensions",
+        "methodName": "MinimumOf",
+        "minArguments": 1,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": "",
+      "graphQlSnippetTemplate": "",
+      "caveats": [
+        "Optimizely Graph does not expose server-side numeric aggregation (average/sum/min/max) over a field the way Find's AverageOf()/SumOf()/MaximumOf()/MinimumOf() do. Equivalent aggregates must be computed in application code after retrieving the matching results, or via a separate reporting/analytics data store."
+      ],
+      "messageFormat": "Find '{0}(...)' has no clean Graph SDK translation; numeric aggregation must be re-implemented separately",
+      "isAutoFixable": false
+    },
+    {
+      "id": "OGM033",
+      "title": "Fuzzy(...) fuzzy-matching query modifier maps to Graph fuzzy search with different semantics",
+      "severity": "warning",
+      "category": "query",
+      "translatability": "caveat",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.Api.Querying.FuzzyExtensions",
+        "methodName": "Fuzzy",
+        "minArguments": 0,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": ".Where(x => x.SearchText().Fuzzy(\"<term>\"))",
+      "graphQlSnippetTemplate": "where: {{ _fulltext: {{ match: \\\"{0}\\\", fuzzy: true }} }}",
+      "caveats": [
+        "Find's Fuzzy() uses a similarity/edit-distance threshold that does not map one-to-one onto Graph's fuzzy-matching behavior. Verify result quality against representative queries after migrating, since Graph may return different matches for the same threshold value."
+      ],
+      "messageFormat": "Find '{0}(...)' can be translated to a Graph fuzzy 'where' clause, but requires manual review",
+      "isAutoFixable": false
+    },
+    {
+      "id": "OGM034",
+      "title": "TermsFacetFor/RangeFacetFor facet-builder detail requires manual review",
+      "severity": "warning",
+      "category": "projection",
+      "translatability": "caveat",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.Api.Querying.FacetExtensions",
+        "methodName": "TermsFacetFor",
+        "minArguments": 1,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": "facets: {{ <field>: {{ buckets {{ name count }} }} }}",
+      "graphQlSnippetTemplate": "facets: {{ {0}: {{ buckets {{ name count }} }} }}",
+      "caveats": [
+        "Find's TermsFacetFor()/RangeFacetFor() configure facet bucket size and range boundaries directly on the query builder. Graph exposes facets in its GraphQL selection set instead, with a different mechanism for controlling bucket count and range boundaries, so the configuration must be re-expressed there."
+      ],
+      "messageFormat": "Find '{0}(...)' can be translated to a Graph facets selection, but requires manual review",
+      "isAutoFixable": false
+    }
+  ]
+}

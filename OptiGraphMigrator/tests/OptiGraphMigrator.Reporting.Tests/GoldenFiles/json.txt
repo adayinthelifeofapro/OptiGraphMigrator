@@ -1,0 +1,32 @@
+[
+  {
+    "RuleId": "OGM001",
+    "Severity": "warning",
+    "Message": "Find \u0027Filter(...)\u0027 can be translated to a Graph \u0027where\u0027 clause",
+    "FilePath": "FindUsageSamples.cs",
+    "StartLine": 10,
+    "StartColumn": 5,
+    "EndLine": 10,
+    "EndColumn": 25,
+    "GraphEquivalent": "where",
+    "GraphQlSnippet": "{ where: { title: { eq: \u0022foo\u0022 } } }",
+    "Title": "Filter maps to where clause",
+    "Translatability": "exact",
+    "DocsUrl": "https://github.com/optigraphmigrator/OptiGraphMigrator/blob/main/docs/rules/OGM001.md"
+  },
+  {
+    "RuleId": "OGM202",
+    "Severity": "info",
+    "Message": "Find custom scoring \u0027Boost(...)\u0027 has no clean Graph SDK translation",
+    "FilePath": "FindUsageSamples.cs",
+    "StartLine": 20,
+    "StartColumn": 8,
+    "EndLine": 20,
+    "EndColumn": 30,
+    "GraphEquivalent": null,
+    "GraphQlSnippet": null,
+    "Title": "Custom scoring has no Graph equivalent",
+    "Translatability": "blocked",
+    "DocsUrl": "https://github.com/optigraphmigrator/OptiGraphMigrator/blob/main/docs/rules/OGM202.md"
+  }
+]

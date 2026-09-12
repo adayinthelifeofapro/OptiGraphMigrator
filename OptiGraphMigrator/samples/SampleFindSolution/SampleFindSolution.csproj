@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<TargetFramework>net10.0</TargetFramework>
+	<RootNamespace>SampleFindSolution</RootNamespace>
+	<IsPackable>false</IsPackable>
+	<Nullable>disable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+	<ProjectReference Include="..\EPiServer.Find.Stubs\EPiServer.Find.Stubs.csproj" />
+	<ProjectReference Include="..\..\src\OptiGraphMigrator.Core\OptiGraphMigrator.Core.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+	<ProjectReference Include="..\..\src\OptiGraphMigrator.Analyzers\OptiGraphMigrator.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+	<ProjectReference Include="..\..\src\OptiGraphMigrator.CodeFixes\OptiGraphMigrator.CodeFixes.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+</Project>

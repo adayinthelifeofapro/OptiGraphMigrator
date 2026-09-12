@@ -1,0 +1,64 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<TargetFramework>netstandard2.0</TargetFramework>
+	<RootNamespace>OptiGraphMigrator.Analyzers</RootNamespace>
+	<AssemblyName>OptiGraphMigrator.Analyzers</AssemblyName>
+	<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+	<NoWarn>$(NoWarn);RS2002</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Package">
+	<IsPackable>true</IsPackable>
+	<PackageId>OptiGraphMigrator.Analyzers</PackageId>
+	<Description>Roslyn analyzer and code fix provider that flags Optimizely Search &amp; Navigation (Find) usage and maps it to its Optimizely Graph SDK equivalent.</Description>
+	<DevelopmentDependency>true</DevelopmentDependency>
+	<IncludeBuildOutput>false</IncludeBuildOutput>
+	<SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+	<NoPackageAnalysis>true</NoPackageAnalysis>
+	<TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_OptiGraphMigrator_PackAnalyzerAssemblies</TargetsForTfmSpecificContentInPackage>
+  </PropertyGroup>
+
+  <ItemGroup>
+	<PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
+	<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<ProjectReference Include="..\OptiGraphMigrator.Core\OptiGraphMigrator.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
+	<AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<None Include="$(MSBuildThisFileDirectory)..\..\README.md" Pack="true" PackagePath="\" Condition="Exists('$(MSBuildThisFileDirectory)..\..\README.md')" />
+  </ItemGroup>
+
+  <!--
+	The analyzer package must carry its own assembly plus OptiGraphMigrator.Core (the rule
+	engine) and OptiGraphMigrator.CodeFixes under analyzers/dotnet/cs so that consuming
+	projects load them as analyzers/code fixes only, never as regular library references.
+	OptiGraphMigrator.CodeFixes references this project, so it cannot be a ProjectReference
+	here (that would be circular); pack scripts/CI must build OptiGraphMigrator.CodeFixes
+	before packing this project so its output directory is populated.
+  -->
+  <Target Name="_OptiGraphMigrator_PackAnalyzerAssemblies">
+	<PropertyGroup>
+	  <_OptiGraphMigratorCodeFixesDir>$(MSBuildThisFileDirectory)..\OptiGraphMigrator.CodeFixes\bin\$(Configuration)\netstandard2.0\</_OptiGraphMigratorCodeFixesDir>
+	</PropertyGroup>
+	<ItemGroup>
+	  <_OptiGraphMigratorAnalyzerFile Include="$(OutDir)OptiGraphMigrator.Analyzers.dll" />
+	  <_OptiGraphMigratorAnalyzerFile Include="$(OutDir)OptiGraphMigrator.Core.dll" />
+	  <_OptiGraphMigratorAnalyzerFile Include="$(_OptiGraphMigratorCodeFixesDir)OptiGraphMigrator.CodeFixes.dll" Condition="Exists('$(_OptiGraphMigratorCodeFixesDir)OptiGraphMigrator.CodeFixes.dll')" />
+	</ItemGroup>
+	<ItemGroup>
+	  <TfmSpecificPackageFile Include="@(_OptiGraphMigratorAnalyzerFile)">
+		<PackagePath>analyzers/dotnet/cs/%(Filename)%(Extension)</PackagePath>
+	  </TfmSpecificPackageFile>
+	</ItemGroup>
+  </Target>
+
+</Project>

@@ -1,0 +1,19 @@
+<Solution>
+  <Folder Name="/samples/">
+    <Project Path="samples/EPiServer.Find.Stubs/EPiServer.Find.Stubs.csproj" />
+    <Project Path="samples/SampleFindSolution/SampleFindSolution.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/OptiGraphMigrator.Core/OptiGraphMigrator.Core.csproj" />
+    <Project Path="src/OptiGraphMigrator.Analyzers/OptiGraphMigrator.Analyzers.csproj" />
+    <Project Path="src/OptiGraphMigrator.CodeFixes/OptiGraphMigrator.CodeFixes.csproj" />
+    <Project Path="src/OptiGraphMigrator.Reporting/OptiGraphMigrator.Reporting.csproj" />
+    <Project Path="src/OptiGraphMigrator.Tool/OptiGraphMigrator.Tool.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/OptiGraphMigrator.Core.Tests/OptiGraphMigrator.Core.Tests.csproj" />
+    <Project Path="tests/OptiGraphMigrator.Analyzers.Tests/OptiGraphMigrator.Analyzers.Tests.csproj" />
+    <Project Path="tests/OptiGraphMigrator.Reporting.Tests/OptiGraphMigrator.Reporting.Tests.csproj" />
+    <Project Path="tests/OptiGraphMigrator.Tool.Tests/OptiGraphMigrator.Tool.Tests.csproj" />
+  </Folder>
+</Solution>

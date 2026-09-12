@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<TargetFramework>netstandard2.0</TargetFramework>
+	<RootNamespace>OptiGraphMigrator.Core</RootNamespace>
+	<AssemblyName>OptiGraphMigrator.Core</AssemblyName>
+	<IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+	<PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
+	<PackageReference Include="System.Text.Json" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<EmbeddedResource Include="Resources\find-to-graph.rules.json" />
+  </ItemGroup>
+
+</Project>

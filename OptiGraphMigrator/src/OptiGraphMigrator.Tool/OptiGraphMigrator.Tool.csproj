@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<OutputType>Exe</OutputType>
+	<TargetFramework>net10.0</TargetFramework>
+	<RootNamespace>OptiGraphMigrator.Tool</RootNamespace>
+	<AssemblyName>optigraph-migrate</AssemblyName>
+	<PackAsTool>true</PackAsTool>
+	<ToolCommandName>optigraph-migrate</ToolCommandName>
+	<PackageId>OptiGraphMigrator.Tool</PackageId>
+	<PackageOutputPath>$(MSBuildThisFileDirectory)..\..\artifacts\</PackageOutputPath>
+	<Description>Scans a solution for Optimizely Search and Navigation (Find) usage and reports the Optimizely Graph migration path.</Description>
+	<RollForward>LatestMajor</RollForward>
+  </PropertyGroup>
+
+  <ItemGroup>
+	<InternalsVisibleTo Include="OptiGraphMigrator.Tool.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<PackageReference Include="Microsoft.Build.Locator" />
+	<PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" />
+	<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
+	<PackageReference Include="System.CommandLine" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<ProjectReference Include="..\OptiGraphMigrator.Core\OptiGraphMigrator.Core.csproj" />
+	<ProjectReference Include="..\OptiGraphMigrator.Analyzers\OptiGraphMigrator.Analyzers.csproj" />
+	<ProjectReference Include="..\OptiGraphMigrator.Reporting\OptiGraphMigrator.Reporting.csproj" />
+  </ItemGroup>
+
+</Project>

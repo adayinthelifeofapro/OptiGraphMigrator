@@ -1,0 +1,76 @@
+{
+  "version": "2.1.0",
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "OptiGraphMigrator",
+          "informationUri": "https://github.com/optigraphmigrator/OptiGraphMigrator",
+          "rules": [
+            {
+              "id": "OGM001",
+              "shortDescription": {
+                "text": "Filter maps to where clause"
+              },
+              "helpUri": "https://github.com/optigraphmigrator/OptiGraphMigrator/blob/main/docs/rules/OGM001.md"
+            },
+            {
+              "id": "OGM202",
+              "shortDescription": {
+                "text": "Custom scoring has no Graph equivalent"
+              },
+              "helpUri": "https://github.com/optigraphmigrator/OptiGraphMigrator/blob/main/docs/rules/OGM202.md"
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "OGM001",
+          "level": "warning",
+          "message": {
+            "text": "Find \u0027Filter(...)\u0027 can be translated to a Graph \u0027where\u0027 clause"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "FindUsageSamples.cs"
+                },
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 5,
+                  "endLine": 10,
+                  "endColumn": 25
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "OGM202",
+          "level": "note",
+          "message": {
+            "text": "Find custom scoring \u0027Boost(...)\u0027 has no clean Graph SDK translation"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "FindUsageSamples.cs"
+                },
+                "region": {
+                  "startLine": 20,
+                  "startColumn": 8,
+                  "endLine": 20,
+                  "endColumn": 30
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
