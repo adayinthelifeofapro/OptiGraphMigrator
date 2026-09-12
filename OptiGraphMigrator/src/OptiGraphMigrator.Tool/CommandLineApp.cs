@@ -20,7 +20,7 @@ namespace OptiGraphMigrator.Tool
             var formatOption = new Option<string>(
                 "--format",
                 () => "console",
-                "Report format: console, sarif, json, or markdown.");
+                "Report format: console, sarif, json, markdown, or html.");
 
             var rulesOption = new Option<string?>(
                 "--rules",

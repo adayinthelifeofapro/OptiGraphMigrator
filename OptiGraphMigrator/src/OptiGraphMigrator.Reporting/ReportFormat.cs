@@ -13,7 +13,10 @@ namespace OptiGraphMigrator.Reporting
         Json,
 
         /// <summary>Markdown table, suitable for PR summaries.</summary>
-        Markdown
+        Markdown,
+
+        /// <summary>Self-contained HTML report, suitable for viewing in a browser.</summary>
+        Html
     }
 
     /// <summary>Parses a <c>--format</c> value into a <see cref="ReportFormat"/>.</summary>
@@ -33,7 +36,8 @@ namespace OptiGraphMigrator.Reporting
                 "sarif" => ReportFormat.Sarif,
                 "json" => ReportFormat.Json,
                 "markdown" or "md" => ReportFormat.Markdown,
-                _ => throw new System.ArgumentException($"Unknown report format '{value}'. Expected one of: console, sarif, json, markdown.")
+                "html" or "htm" => ReportFormat.Html,
+                _ => throw new System.ArgumentException($"Unknown report format '{value}'. Expected one of: console, sarif, json, markdown, html.")
             };
         }
     }

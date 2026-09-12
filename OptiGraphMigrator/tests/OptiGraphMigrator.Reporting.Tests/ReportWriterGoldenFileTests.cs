@@ -33,6 +33,12 @@ namespace OptiGraphMigrator.Reporting.Tests
             AssertMatchesGoldenFile(new MarkdownReportWriter(), "markdown.txt");
         }
 
+        [Fact]
+        public void HtmlWriter_MatchesGoldenFile()
+        {
+            AssertMatchesGoldenFile(new HtmlReportWriter(), "html.txt");
+        }
+
         private static void AssertMatchesGoldenFile(IReportWriter writer, string goldenFileName)
         {
             var report = SampleReport.Create();

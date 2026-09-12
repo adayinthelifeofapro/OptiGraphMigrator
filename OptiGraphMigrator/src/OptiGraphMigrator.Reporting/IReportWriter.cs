@@ -19,6 +19,7 @@ namespace OptiGraphMigrator.Reporting
             ReportFormat.Json => new JsonReportWriter(),
             ReportFormat.Markdown => new MarkdownReportWriter(),
             ReportFormat.Sarif => new SarifReportWriter(),
+            ReportFormat.Html => new HtmlReportWriter(),
             _ => new ConsoleReportWriter()
         };
     }
