@@ -68,9 +68,43 @@ namespace OptiGraphMigrator.Tool
             }
 
             return new MigrationReport(findings
+                .GroupBy(f => (f.FilePath, f.StartLine, f.StartColumn, f.EndLine, f.EndColumn, f.RuleId, f.Message), FindingKeyComparer.Instance)
+                .Select(g => g.First())
                 .OrderBy(f => f.FilePath, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(f => f.StartLine)
                 .ToList());
+        }
+
+        /// <summary>
+        /// Compares finding dedup keys, ignoring the file path's casing so that findings
+        /// produced for the same physical file across multiple target frameworks (or other
+        /// duplicate project instances in the workspace) collapse into a single entry.
+        /// </summary>
+        private sealed class FindingKeyComparer : IEqualityComparer<(string FilePath, int StartLine, int StartColumn, int EndLine, int EndColumn, string RuleId, string Message)>
+        {
+            public static readonly FindingKeyComparer Instance = new();
+
+            public bool Equals((string FilePath, int StartLine, int StartColumn, int EndLine, int EndColumn, string RuleId, string Message) x, (string FilePath, int StartLine, int StartColumn, int EndLine, int EndColumn, string RuleId, string Message) y) =>
+                string.Equals(x.FilePath, y.FilePath, StringComparison.OrdinalIgnoreCase) &&
+                x.StartLine == y.StartLine &&
+                x.StartColumn == y.StartColumn &&
+                x.EndLine == y.EndLine &&
+                x.EndColumn == y.EndColumn &&
+                string.Equals(x.RuleId, y.RuleId, StringComparison.Ordinal) &&
+                string.Equals(x.Message, y.Message, StringComparison.Ordinal);
+
+            public int GetHashCode((string FilePath, int StartLine, int StartColumn, int EndLine, int EndColumn, string RuleId, string Message) obj)
+            {
+                var hash = new HashCode();
+                hash.Add(obj.FilePath, StringComparer.OrdinalIgnoreCase);
+                hash.Add(obj.StartLine);
+                hash.Add(obj.StartColumn);
+                hash.Add(obj.EndLine);
+                hash.Add(obj.EndColumn);
+                hash.Add(obj.RuleId, StringComparer.Ordinal);
+                hash.Add(obj.Message, StringComparer.Ordinal);
+                return hash.ToHashCode();
+            }
         }
 
         private static async Task<IReadOnlyList<Project>> LoadProjectsAsync(MSBuildWorkspace workspace, string path)
