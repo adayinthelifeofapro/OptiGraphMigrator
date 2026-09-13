@@ -63,6 +63,15 @@ namespace OptiGraphMigrator.Core.Rules.Complex
                 "reflected/expression-tree-driven code.",
             };
 
+            const string suggestedApproach =
+                "Replace the reflection/expression-tree composition with explicit, typed query building. " +
+                "Enumerate the supported filter options as a small model (an enum or a record per facet), map " +
+                "each option to a concrete Graph 'where' clause in a switch, and compose the selected clauses " +
+                "with the Graph SDK's And/Or builders - or, if you emit GraphQL text directly, build the " +
+                "document from a whitelist of field names and pass user values as GraphQL variables rather " +
+                "than string concatenation. Driving field names off typeof(T).GetProperty(...) at runtime has " +
+                "no Graph counterpart and also loses compile-time validation against the Graph schema.";
+
             return new RuleMatch(
                 Id,
                 context.Segment.Invocation.GetLocation(),
@@ -70,7 +79,8 @@ namespace OptiGraphMigrator.Core.Rules.Complex
                 string.Empty,
                 caveats,
                 graphQlSnippet: null,
-                messageArguments: new object?[] { context.Segment.MethodName });
+                messageArguments: new object?[] { context.Segment.MethodName },
+                suggestedApproach: suggestedApproach);
         }
 
         private static bool ContainsReflectionOrExpressionBuilding(ExpressionSyntax expression, SemanticModel semanticModel)

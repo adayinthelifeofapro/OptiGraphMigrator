@@ -63,6 +63,12 @@ namespace OptiGraphMigrator.Core.Rules.Complex
                 "clause; nested boolean grouping and precedence should be re-verified against the Graph schema.",
             };
 
+            const string suggestedApproach =
+                "Rebuild the boolean tree explicitly with the Graph SDK's And/Or/Not builders, keeping each " +
+                "original grouping as its own nested block rather than flattening it - Find's builder chains " +
+                "and Graph's AND/OR arrays differ in how they imply precedence. Extract the composition into a " +
+                "small method so it can be unit tested against a few representative filter combinations.";
+
             return new RuleMatch(
                 Id,
                 context.Segment.Invocation.GetLocation(),
@@ -70,7 +76,8 @@ namespace OptiGraphMigrator.Core.Rules.Complex
                 ".Where(x => <composed boolean predicate>)",
                 caveats,
                 graphQlSnippet: "where: { AND: [ /* composed conditions */ ] }",
-                messageArguments: new object?[] { context.Segment.MethodName });
+                messageArguments: new object?[] { context.Segment.MethodName },
+                suggestedApproach: suggestedApproach);
         }
     }
 }

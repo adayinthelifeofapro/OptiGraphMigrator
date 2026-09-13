@@ -12,6 +12,12 @@
 |---|---|---|
 | OGM202 | Custom scoring has no Graph equivalent | 1 |
 
+### Suggested approaches
+
+These patterns have no Optimizely Graph equivalent, so the behaviour has to be re-implemented. Suggested starting points:
+
+- **OGM202**: Optimizely Graph has no per-query boost function. Retrieve the candidate set from Graph, then apply the boost weights in application code when ordering the results.
+
 ## Findings
 
 | Severity | Rule | Location | Message | Graph equivalent |
@@ -23,3 +29,5 @@
   ```
 
 | info | OGM202 | FindUsageSamples.cs(20,8) | Find custom scoring 'Boost(...)' has no clean Graph SDK translation |  |
+
+> **Suggested approach:** Optimizely Graph has no per-query boost function. Retrieve the candidate set from Graph, then apply the boost weights in application code when ordering the results.

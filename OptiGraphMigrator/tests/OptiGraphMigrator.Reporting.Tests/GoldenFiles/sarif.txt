@@ -52,7 +52,7 @@
           "ruleId": "OGM202",
           "level": "note",
           "message": {
-            "text": "Find custom scoring \u0027Boost(...)\u0027 has no clean Graph SDK translation"
+            "text": "Find custom scoring \u0027Boost(...)\u0027 has no clean Graph SDK translation Suggested approach: Optimizely Graph has no per-query boost function. Retrieve the candidate set from Graph, then apply the boost weights in application code when ordering the results."
           },
           "locations": [
             {

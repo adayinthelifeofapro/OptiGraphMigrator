@@ -64,6 +64,15 @@ namespace OptiGraphMigrator.Core.Rules.Complex
                 "DeleteIndex() should be removed rather than translated.",
             };
 
+            const string suggestedApproach =
+                "Delete the call and let the CMS content sync pipeline own indexing. If the content being " +
+                "pushed here is not CMS content, model it as a Graph content/source type and populate it via " +
+                "the Graph Content Ingestion (HTTP) API from a scheduled job or background service instead of " +
+                "an inline per-request call. If the call exists purely to force freshness after an edit, rely " +
+                "on the sync job instead and design the calling code to tolerate the index's eventual " +
+                "consistency (for example read straight from IContentLoader/IContentRepository when you need " +
+                "read-your-own-write semantics).";
+
             return new RuleMatch(
                 Id,
                 context.Segment.Invocation.GetLocation(),
@@ -71,7 +80,8 @@ namespace OptiGraphMigrator.Core.Rules.Complex
                 string.Empty,
                 caveats,
                 graphQlSnippet: null,
-                messageArguments: new object?[] { context.Segment.MethodName });
+                messageArguments: new object?[] { context.Segment.MethodName },
+                suggestedApproach: suggestedApproach);
         }
     }
 }

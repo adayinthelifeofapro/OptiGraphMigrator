@@ -38,6 +38,8 @@ namespace OptiGraphMigrator.Reporting
             writer.WriteLine(".equivalent-yes { background: rgba(61, 220, 132, 0.15); color: #3ddc84; }");
             writer.WriteLine(".equivalent-no { background: rgba(255, 92, 92, 0.15); color: #ff5c5c; }");
             writer.WriteLine(".no-equivalent-text { color: #ff8080; }");
+            writer.WriteLine(".suggested-approach { color: #b9c0d4; font-size: 0.9rem; line-height: 1.5; border-left: 3px solid #5aa9f8; background: #1a1e2b; }");
+            writer.WriteLine(".suggested-approach-label { display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: #5aa9f8; margin-bottom: 0.35rem; font-weight: 600; }");
             writer.WriteLine("</style>");
             writer.WriteLine("</head>");
             writer.WriteLine("<body>");
@@ -118,6 +120,13 @@ namespace OptiGraphMigrator.Reporting
                 if (!string.IsNullOrEmpty(finding.GraphQlSnippet))
                 {
                     writer.WriteLine($"<tr><td colspan=\"4\"><pre>{Encode(finding.GraphQlSnippet!)}</pre></td></tr>");
+                }
+
+                if (!string.IsNullOrEmpty(finding.SuggestedApproach))
+                {
+                    writer.WriteLine(
+                        "<tr><td colspan=\"4\" class=\"suggested-approach\">" +
+                        $"<span class=\"suggested-approach-label\">Suggested approach</span>{Encode(finding.SuggestedApproach!)}</td></tr>");
                 }
             }
 

@@ -46,7 +46,7 @@ namespace OptiGraphMigrator.Reporting
             {
                 RuleId = finding.RuleId,
                 Level = ToSarifLevel(finding.Severity),
-                Message = new SarifMessage { Text = finding.Message },
+                Message = new SarifMessage { Text = ToResultText(finding) },
                 Locations = new List<SarifLocation>
                 {
                     new SarifLocation
@@ -89,6 +89,15 @@ namespace OptiGraphMigrator.Reporting
             var json = JsonSerializer.Serialize(log, Options);
             writer.Write(json);
             writer.WriteLine();
+        }
+
+        private static string ToResultText(MigrationFinding finding)
+        {
+            // SARIF results carry a single message, so the guidance is appended to it rather than
+            // hidden in a property bag most viewers (including GitHub code scanning) do not surface.
+            return string.IsNullOrEmpty(finding.SuggestedApproach)
+                ? finding.Message
+                : finding.Message + " Suggested approach: " + finding.SuggestedApproach;
         }
 
         private static string ToSarifLevel(string severity) => severity switch

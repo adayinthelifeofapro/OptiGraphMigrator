@@ -67,6 +67,14 @@ namespace OptiGraphMigrator.Core.Rules.Complex
                     "applied within each separate per-type query.");
             }
 
+            const string suggestedApproach =
+                "Model the unified result set yourself: define a single result DTO (title, url, excerpt, type) " +
+                "and a small service that either queries a shared Graph interface/union type once, or issues " +
+                "one query per content type in parallel and merges the results into that DTO. Merge order and " +
+                "paging then become explicit application concerns - decide up front whether you interleave by " +
+                "relevance, or present per-type groups, and page over the merged list rather than relying on " +
+                "per-query skip/limit.";
+
             return new RuleMatch(
                 Id,
                 context.Segment.Invocation.GetLocation(),
@@ -74,7 +82,8 @@ namespace OptiGraphMigrator.Core.Rules.Complex
                 "Separate Graph queries per content type, or a query against a shared union/interface type",
                 caveats,
                 graphQlSnippet: null,
-                messageArguments: new object?[] { context.Segment.MethodName });
+                messageArguments: new object?[] { context.Segment.MethodName },
+                suggestedApproach: suggestedApproach);
         }
     }
 }

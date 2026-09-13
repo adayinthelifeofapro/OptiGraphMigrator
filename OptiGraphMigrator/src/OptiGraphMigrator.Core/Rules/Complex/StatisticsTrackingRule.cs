@@ -63,6 +63,15 @@ namespace OptiGraphMigrator.Core.Rules.Complex
                 "(for example capturing query events and aggregating them separately).",
             };
 
+            const string suggestedApproach =
+                "Wrap your Graph query execution in a thin search service and emit a structured event " +
+                "(search term, result count, filters, timestamp, and a correlation id) for every query, plus a " +
+                "second event when a user clicks a result. Send those events to whatever telemetry sink the " +
+                "solution already uses - for example ILogger + Application Insights custom events, Optimizely " +
+                "Data Platform / Web Experimentation tracking, or an events table in your own database - then " +
+                "rebuild the popular-terms, searches-per-hour/day and clicked-result reports as queries " +
+                "(Kusto, SQL, or a dashboard) over that event stream.";
+
             return new RuleMatch(
                 Id,
                 context.Segment.Invocation.GetLocation(),
@@ -70,7 +79,8 @@ namespace OptiGraphMigrator.Core.Rules.Complex
                 string.Empty,
                 caveats,
                 graphQlSnippet: null,
-                messageArguments: new object?[] { context.Segment.MethodName });
+                messageArguments: new object?[] { context.Segment.MethodName },
+                suggestedApproach: suggestedApproach);
         }
     }
 }

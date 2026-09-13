@@ -112,7 +112,8 @@ namespace OptiGraphMigrator.Core.Rules
                 rule.GraphEquivalent,
                 rule.Caveats.ToList(),
                 graphQlSnippet: snippet,
-                messageArguments: new object?[] { methodName });
+                messageArguments: new object?[] { methodName },
+                suggestedApproach: string.IsNullOrEmpty(rule.SuggestedApproach) ? null : rule.SuggestedApproach);
         }
     }
 }

@@ -60,6 +60,15 @@ namespace OptiGraphMigrator.Core.Rules.Complex
                 "applied to the Graph results in application code.",
             };
 
+            const string suggestedApproach =
+                "Decide which of the two shapes this predicate really is. If the computed value is stable per " +
+                "content item, precompute it into a property on the content type so it gets indexed, then " +
+                "express the condition as a plain Graph 'where' clause over that field - this keeps filtering " +
+                "and paging server-side. If the value genuinely depends on per-request state (current user, " +
+                "request culture, permissions), fetch a superset from Graph and apply the predicate with LINQ " +
+                "to the returned results, but move paging into application code too, since skip/limit applied " +
+                "before an in-memory filter will return short or uneven pages.";
+
             return new RuleMatch(
                 Id,
                 context.Segment.Invocation.GetLocation(),
@@ -67,7 +76,8 @@ namespace OptiGraphMigrator.Core.Rules.Complex
                 string.Empty,
                 caveats,
                 graphQlSnippet: null,
-                messageArguments: new object?[] { context.Segment.MethodName });
+                messageArguments: new object?[] { context.Segment.MethodName },
+                suggestedApproach: suggestedApproach);
         }
 
         private static bool ContainsUntranslatableCall(

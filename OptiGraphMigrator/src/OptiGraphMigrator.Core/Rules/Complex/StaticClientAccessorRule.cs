@@ -59,6 +59,13 @@ namespace OptiGraphMigrator.Core.Rules.Complex
                 "of the migration.",
             };
 
+            const string suggestedApproach =
+                "Register the Graph client in the DI container at startup and take it as a constructor " +
+                "parameter here. Where the static accessor is reached from a type you cannot easily inject " +
+                "into (a static helper or an extension method), promote that helper to an injectable service " +
+                "first, then update its call sites - this also removes the hidden global state that makes the " +
+                "current code hard to unit test.";
+
             return new RuleMatch(
                 Id,
                 context.Segment.Invocation.GetLocation(),
@@ -66,7 +73,8 @@ namespace OptiGraphMigrator.Core.Rules.Complex
                 "Inject the Graph client instead of accessing a static singleton",
                 caveats,
                 graphQlSnippet: null,
-                messageArguments: new object?[] { context.Segment.MethodName });
+                messageArguments: new object?[] { context.Segment.MethodName },
+                suggestedApproach: suggestedApproach);
         }
 
         private static bool ContainsStaticSearchClientInstanceAccess(ExpressionSyntax expression, RuleMatchContext context)

@@ -1,7 +1,9 @@
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
@@ -51,6 +53,34 @@ namespace OptiGraphMigrator.Analyzers.Tests
             test.ExpectedDiagnostics.AddRange(expected);
 
             await test.RunAsync();
+        }
+
+        public static async Task<IReadOnlyList<Diagnostic>> GetAnalyzerDiagnosticsAsync<TAnalyzer>(string source)
+            where TAnalyzer : DiagnosticAnalyzer, new()
+        {
+            var compilation = await BuildCompilationAsync(source);
+            var analyzer = new TAnalyzer();
+            var withAnalyzers = compilation.WithAnalyzers(ImmutableArray.Create<DiagnosticAnalyzer>(analyzer));
+
+            var diagnostics = await withAnalyzers.GetAnalyzerDiagnosticsAsync();
+            return diagnostics;
+        }
+
+        private static async Task<Compilation> BuildCompilationAsync(string source)
+        {
+            var references = new List<MetadataReference>();
+            var resolvedAssemblies = await ReferenceAssemblies.ResolveAsync(LanguageNames.CSharp, System.Threading.CancellationToken.None);
+            references.AddRange(resolvedAssemblies);
+            AddFindReference(references);
+
+            var syntaxTree = CSharpSyntaxTree.ParseText(source);
+            var compilation = CSharpCompilation.Create(
+                "AnalyzerTestAssembly",
+                new[] { syntaxTree },
+                references,
+                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+            return compilation;
         }
 
         private static void AddFindReference(ICollection<MetadataReference> references)

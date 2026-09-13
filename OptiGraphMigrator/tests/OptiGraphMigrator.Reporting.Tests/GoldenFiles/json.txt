@@ -12,7 +12,8 @@
     "GraphQlSnippet": "{ where: { title: { eq: \u0022foo\u0022 } } }",
     "Title": "Filter maps to where clause",
     "Translatability": "exact",
-    "DocsUrl": "https://github.com/optigraphmigrator/OptiGraphMigrator/blob/main/docs/rules/OGM001.md"
+    "DocsUrl": "https://github.com/optigraphmigrator/OptiGraphMigrator/blob/main/docs/rules/OGM001.md",
+    "SuggestedApproach": null
   },
   {
     "RuleId": "OGM202",
@@ -27,6 +28,7 @@
     "GraphQlSnippet": null,
     "Title": "Custom scoring has no Graph equivalent",
     "Translatability": "blocked",
-    "DocsUrl": "https://github.com/optigraphmigrator/OptiGraphMigrator/blob/main/docs/rules/OGM202.md"
+    "DocsUrl": "https://github.com/optigraphmigrator/OptiGraphMigrator/blob/main/docs/rules/OGM202.md",
+    "SuggestedApproach": "Optimizely Graph has no per-query boost function. Retrieve the candidate set from Graph, then apply the boost weights in application code when ordering the results."
   }
 ]

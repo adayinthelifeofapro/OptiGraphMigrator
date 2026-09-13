@@ -55,6 +55,16 @@ namespace OptiGraphMigrator.Core.Rules.Complex
                 "scoring, or be re-implemented as post-query re-ranking in application code.",
             };
 
+            const string suggestedApproach =
+                "Re-rank in application code: issue the Graph query with a slightly larger limit than you " +
+                "intend to display, project the fields your boost logic depends on into the selection set, " +
+                "then apply the weighting yourself (for example an OrderByDescending over a score function " +
+                "combining recency, content type and matched field) before paging the result in memory. " +
+                "Where the boost only ever separates two fixed buckets, prefer splitting it into two Graph " +
+                "queries (one per bucket) and concatenating the results in priority order, which keeps paging " +
+                "predictable. If the boost targets a specific field, check first whether a dedicated indexed " +
+                "field plus an explicit 'orderBy' can express the same intent without custom scoring.";
+
             return new RuleMatch(
                 Id,
                 context.Segment.Invocation.GetLocation(),
@@ -62,7 +72,8 @@ namespace OptiGraphMigrator.Core.Rules.Complex
                 string.Empty,
                 caveats,
                 graphQlSnippet: null,
-                messageArguments: new object?[] { context.Segment.MethodName });
+                messageArguments: new object?[] { context.Segment.MethodName },
+                suggestedApproach: suggestedApproach);
         }
     }
 }

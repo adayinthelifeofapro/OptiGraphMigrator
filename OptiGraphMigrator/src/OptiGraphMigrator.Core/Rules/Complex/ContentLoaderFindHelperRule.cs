@@ -65,6 +65,13 @@ namespace OptiGraphMigrator.Core.Rules.Complex
                 "site should be migrated to an explicit Graph client query instead of an IContentLoader call.",
             };
 
+            const string suggestedApproach =
+                "Introduce an explicit query abstraction at this call site: inject the Graph SDK client " +
+                "alongside (or instead of) IContentLoader, express the helper's implicit filtering as a " +
+                "visible Graph 'where' clause, and return a typed result model rather than IContent. Putting " +
+                "that behind your own interface keeps call sites testable and makes the index-backed, " +
+                "eventually consistent nature of the read obvious to future readers.";
+
             return new RuleMatch(
                 Id,
                 context.Segment.Invocation.GetLocation(),
@@ -72,7 +79,8 @@ namespace OptiGraphMigrator.Core.Rules.Complex
                 "Inject and query the Graph SDK client directly instead of this IContentLoader helper",
                 caveats,
                 graphQlSnippet: null,
-                messageArguments: new object?[] { context.Segment.MethodName });
+                messageArguments: new object?[] { context.Segment.MethodName },
+                suggestedApproach: suggestedApproach);
         }
     }
 }

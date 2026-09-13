@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using OptiGraphMigrator.CodeFixes;
@@ -97,6 +98,29 @@ namespace OptiGraphMigrator.Analyzers.Tests
                 .WithArguments("Boost");
 
             await FindTestHelper.VerifyAnalyzerAsync<FindUsageAnalyzer>(source, expected);
+        }
+
+        [Fact]
+        public async Task Boost_ReportsSuggestedApproachDiagnosticProperty()
+        {
+            const string source = """
+                using EPiServer.Find;
+                using EPiServer.Find.Api.Querying;
+
+                public class Sample
+                {
+                    public void Run(IClient client)
+                    {
+                        var results = client.Search<object>().Boost(x => x, 2.0).GetResult();
+                    }
+                }
+                """;
+
+            var diagnostics = await FindTestHelper.GetAnalyzerDiagnosticsAsync<FindUsageAnalyzer>(source);
+
+            var diagnostic = Assert.Single(diagnostics, d => d.Id == "OGM202");
+            Assert.True(diagnostic.Properties.TryGetValue("SuggestedApproach", out var suggestedApproach));
+            Assert.False(string.IsNullOrWhiteSpace(suggestedApproach));
         }
 
         [Fact]

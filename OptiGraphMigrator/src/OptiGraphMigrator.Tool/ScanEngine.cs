@@ -134,6 +134,7 @@ namespace OptiGraphMigrator.Tool
             diagnostic.Properties.TryGetValue("GraphEquivalent", out var graphEquivalent);
             diagnostic.Properties.TryGetValue("GraphQlSnippet", out var graphQlSnippet);
             diagnostic.Properties.TryGetValue("Translatability", out var translatability);
+            diagnostic.Properties.TryGetValue("SuggestedApproach", out var suggestedApproach);
 
             var (title, docsUrl) = ResolveRuleMetadata(diagnostic.Id);
 
@@ -150,7 +151,8 @@ namespace OptiGraphMigrator.Tool
                 string.IsNullOrEmpty(graphQlSnippet) ? null : graphQlSnippet,
                 title,
                 string.IsNullOrEmpty(translatability) ? null : translatability!.ToLowerInvariant(),
-                docsUrl);
+                docsUrl,
+                string.IsNullOrEmpty(suggestedApproach) ? null : suggestedApproach);
         }
 
         private static (string? Title, string? DocsUrl) ResolveRuleMetadata(string ruleId)

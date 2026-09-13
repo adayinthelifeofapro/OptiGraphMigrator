@@ -75,6 +75,13 @@ namespace OptiGraphMigrator.Core.Rules.Complex
 
             var caveats = new[] { OperatorCaveats[operatorName] };
 
+            const string suggestedApproach =
+                "Confirm the Graph field's type and analyzer before settling on an operator: match/contains " +
+                "behave differently on analysed text fields than on keyword-style fields, so pick the operator " +
+                "whose semantics match the intent (exact identity, prefix, or full text) and cover the " +
+                "behaviour with an integration test over representative content rather than assuming parity " +
+                "with Find.";
+
             return new RuleMatch(
                 Id,
                 context.Segment.Invocation.GetLocation(),
@@ -82,7 +89,8 @@ namespace OptiGraphMigrator.Core.Rules.Complex
                 ".Where(x => <field comparison>)",
                 caveats,
                 graphQlSnippet: null,
-                messageArguments: new object?[] { context.Segment.MethodName });
+                messageArguments: new object?[] { context.Segment.MethodName },
+                suggestedApproach: suggestedApproach);
         }
 
         private static string? FindReviewedOperator(LambdaExpressionSyntax lambda, SemanticModel semanticModel)

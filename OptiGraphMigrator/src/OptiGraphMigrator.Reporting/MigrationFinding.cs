@@ -23,7 +23,8 @@ namespace OptiGraphMigrator.Reporting
             string? graphQlSnippet,
             string? title = null,
             string? translatability = null,
-            string? docsUrl = null)
+            string? docsUrl = null,
+            string? suggestedApproach = null)
         {
             RuleId = ruleId;
             Severity = severity;
@@ -38,6 +39,7 @@ namespace OptiGraphMigrator.Reporting
             Title = title;
             Translatability = translatability;
             DocsUrl = docsUrl;
+            SuggestedApproach = suggestedApproach;
         }
 
         /// <summary>Stable diagnostic id, for example <c>OGM001</c>.</summary>
@@ -78,6 +80,12 @@ namespace OptiGraphMigrator.Reporting
 
         /// <summary>Link to the rule's documentation page, when known.</summary>
         public string? DocsUrl { get; }
+
+        /// <summary>
+        /// Concrete guidance on how to implement equivalent behaviour by hand. Most valuable on
+        /// <c>blocked</c> findings, where there is no Graph construct to point the developer at.
+        /// </summary>
+        public string? SuggestedApproach { get; }
     }
 
     /// <summary>The complete set of findings produced by a scan, plus summary counts.</summary>

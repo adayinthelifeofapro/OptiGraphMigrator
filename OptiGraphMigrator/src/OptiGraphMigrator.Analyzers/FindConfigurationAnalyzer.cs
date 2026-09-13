@@ -75,6 +75,7 @@ namespace OptiGraphMigrator.Analyzers
             properties.Add("GraphEquivalent", match.GraphEquivalent);
             properties.Add("GraphQlSnippet", match.GraphQlSnippet ?? string.Empty);
             properties.Add("Translatability", match.Translatability.ToString());
+            properties.Add("SuggestedApproach", match.SuggestedApproach ?? string.Empty);
 
             context.ReportDiagnostic(Diagnostic.Create(
                 DiagnosticDescriptors.GetOrCreate(rule),

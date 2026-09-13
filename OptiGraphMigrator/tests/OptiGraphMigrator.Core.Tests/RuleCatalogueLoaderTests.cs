@@ -171,5 +171,61 @@ namespace OptiGraphMigrator.Core.Tests
                 Directory.Delete(root, recursive: true);
             }
         }
+
+        [Fact]
+        public void Default_EveryBlockedRule_HasSuggestedApproach()
+        {
+            var catalogue = RuleCatalogueLoader.Default;
+
+            var blockedRulesMissingGuidance = catalogue.Rules
+                .Where(r => r.Translatability == Translatability.Blocked && string.IsNullOrWhiteSpace(r.SuggestedApproach))
+                .Select(r => r.Id)
+                .ToList();
+
+            Assert.Empty(blockedRulesMissingGuidance);
+        }
+
+        [Fact]
+        public void Default_EveryRule_PassesValidation()
+        {
+            var catalogue = RuleCatalogueLoader.Default;
+
+            foreach (var rule in catalogue.Rules)
+            {
+                var exception = Record.Exception(rule.Validate);
+                Assert.Null(exception);
+            }
+        }
+
+        [Fact]
+        public void Validate_BlockedRuleWithoutSuggestedApproach_Throws()
+        {
+            var rule = new MigrationRule
+            {
+                Id = "OGM999",
+                Translatability = Translatability.Blocked,
+                FindSymbolPattern = new FindSymbolPattern { MethodName = "SomeMethod" },
+                SuggestedApproach = string.Empty
+            };
+
+            var exception = Assert.Throws<InvalidOperationException>(rule.Validate);
+            Assert.Contains("SuggestedApproach", exception.Message);
+        }
+
+        [Fact]
+        public void Validate_BlockedRuleWithSuggestedApproach_DoesNotThrow()
+        {
+            var rule = new MigrationRule
+            {
+                Id = "OGM999",
+                Translatability = Translatability.Blocked,
+                FindSymbolPattern = new FindSymbolPattern { MethodName = "SomeMethod" },
+                SuggestedApproach = "Implement this yourself by doing X."
+            };
+
+            var exception = Record.Exception(rule.Validate);
+
+            Assert.Null(exception);
+        }
     }
 }

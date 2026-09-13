@@ -171,6 +171,7 @@
       "caveats": [
         "Optimizely Graph has no built-in search analytics/tracking pipeline equivalent to Find's Track(). Statistics must be captured with a separate telemetry solution."
       ],
+      "suggestedApproach": "Emit your own search telemetry: wrap Graph query execution in a search service that logs a structured event per query (term, filters, result count, timestamp, correlation id) and a second event when a result is clicked, then send those to the telemetry sink the solution already uses (ILogger + Application Insights custom events, Optimizely Data Platform, or an events table you own). Rebuild any dashboards or reports as queries over that event stream.",
       "messageFormat": "Find '{0}(...)' has no clean Graph SDK translation; search analytics must be re-implemented separately",
       "isAutoFixable": false
     },
@@ -349,6 +350,7 @@
       "caveats": [
         "Optimizely Graph has no built-in editorial promotions/best-bets pinning feature. Pinned results must be re-implemented in application code by merging curated content ahead of the Graph result set."
       ],
+      "suggestedApproach": "Store the curated promotions yourself - for example a 'Best Bets' CMS block or settings list mapping a search phrase to one or more content references - and resolve it in your search service: look up matches for the current term, load those items, and prepend them to the Graph result set while de-duplicating any that Graph also returned. Remember to exclude the pinned items from the page-size budget so paging stays correct.",
       "messageFormat": "Find '{0}(...)' has no clean Graph SDK translation; editorial best bets must be re-implemented separately",
       "isAutoFixable": false
     },
@@ -369,6 +371,7 @@
       "caveats": [
         "Optimizely Graph does not provide a built-in spelling-suggestion or autocomplete API equivalent to Find's DidYouMean()/Autocomplete(). A separate suggestion index or third-party service is required."
       ],
+      "suggestedApproach": "Build a suggestion source of your own: maintain a term dictionary (harvested from indexed titles/keywords or from your logged search terms) and run an edit-distance check - for example a Levenshtein comparison via a library such as Fastenshtein, or a trigram match - against it when a query returns zero or few results, offering the closest term as 'did you mean'. Alternatively delegate to a dedicated service (Azure AI Search suggesters, Algolia) that sits alongside Graph.",
       "messageFormat": "Find '{0}(...)' has no clean Graph SDK translation; suggestion/autocomplete features must be re-implemented separately",
       "isAutoFixable": false
     },
@@ -389,6 +392,7 @@
       "caveats": [
         "Optimizely Graph does not provide a built-in autocomplete/type-ahead API equivalent to Find's Autocomplete(). A separate suggestion index or third-party service is required."
       ],
+      "suggestedApproach": "Implement type-ahead as a lightweight endpoint of your own: for short prefixes, query Graph with a 'startsWith' where clause over an indexed title/keyword field and return just the matched field values, cached per prefix; for richer behaviour, maintain a dedicated suggestion store (a cached in-memory trie built from indexed terms, or a small table of popular search terms captured from your own query telemetry). Debounce on the client and cap the result count.",
       "messageFormat": "Find '{0}(...)' has no clean Graph SDK translation; autocomplete features must be re-implemented separately",
       "isAutoFixable": false
     },
@@ -409,6 +413,7 @@
       "caveats": [
         "Optimizely Graph does not currently expose geo/spatial distance filtering or sorting equivalent to Find's DistanceFrom(). Location-based search must be re-implemented with a separate geo index or post-filtering in application code."
       ],
+      "suggestedApproach": "Do the distance work yourself in two stages: narrow the candidate set server-side with a cheap Graph 'where' clause (a bounding box on indexed latitude/longitude fields, or a coarse region/postcode field), then compute exact distances with the haversine formula - or System.Device.Location / NetTopologySuite - and sort and page the results in application code. If geo search is central to the site, consider keeping a purpose-built spatial store (PostGIS, Azure AI Search geo filters, Azure Maps) alongside Graph.",
       "messageFormat": "Find '{0}(...)' has no clean Graph SDK translation; geo/spatial search must be re-implemented separately",
       "isAutoFixable": false
     },
@@ -449,6 +454,7 @@
       "caveats": [
         "Optimizely Graph does not expose a built-in 'more like this' / content-similarity query. Related-content recommendations must be re-implemented with a separate recommendation service or a hand-rolled 'where' clause approximating similarity on indexed fields (e.g. shared tags/categories)."
       ],
+      "suggestedApproach": "Approximate similarity with explicit signals you already index: take the current item's tags, categories, author or content type, and issue a Graph query for other items sharing them (an OR-composed 'where' clause), excluding the current item, then rank the results in application code by how many signals overlap. Cache the related-items list per content item since it changes rarely. For genuine semantic similarity, delegate to a recommendation or vector-search service and store only the resulting ids.",
       "messageFormat": "Find '{0}(...)' has no clean Graph SDK translation; content-similarity queries must be re-implemented separately",
       "isAutoFixable": false
     },
@@ -490,6 +496,7 @@
       "caveats": [
         "Optimizely Graph queries do not support field-based result deduplication like Find's RemoveDuplicates(). Equivalent behaviour must be implemented by grouping/distinct-ing results in application code after the query executes."
       ],
+      "suggestedApproach": "De-duplicate after the query: include the field you were de-duplicating on in the selection set, then apply GroupBy(field).Select(g => g.First()) - or DistinctBy on .NET 6+ - to the returned items. Because this shrinks the result set after Graph has already applied skip/limit, over-fetch (request more items than the page size) and page the de-duplicated list in application code, or better, fix the duplication at its source so the index holds one entry per logical item.",
       "messageFormat": "Find '{0}(...)' has no clean Graph SDK translation; result deduplication must be re-implemented separately",
       "isAutoFixable": false
     },
@@ -510,6 +517,7 @@
       "caveats": [
         "Optimizely Graph does not expose the raw relevance score used by Find's MinScore()/RemoveMatchScoreThreshold(), so a query cannot filter on it directly. Consider filtering results in application code, or re-approximating the cutoff with an explicit 'where' clause on indexed fields."
       ],
+      "suggestedApproach": "Replace the score cutoff with an explicit quality rule. In most cases the intent is 'hide weak matches', which is better expressed as a stricter 'where' clause (require the term in a title/keyword field rather than anywhere in the body) or simply as a smaller result limit. If you need a relative cutoff, apply it in application code using a signal you control - for example drop results below a computed relevance score of your own, or below a fraction of the top result's score - rather than Graph's internal ranking.",
       "messageFormat": "Find '{0}(...)' has no clean Graph SDK translation; relevance-score thresholds must be re-implemented separately",
       "isAutoFixable": false
     },
@@ -570,6 +578,7 @@
       "caveats": [
         "Optimizely Graph does not expose server-side numeric aggregation (average/sum/min/max) over a field the way Find's AverageOf()/SumOf()/MaximumOf()/MinimumOf() do. Equivalent aggregates must be computed in application code after retrieving the matching results, or via a separate reporting/analytics data store."
       ],
+      "suggestedApproach": "Compute the aggregate yourself. For small result sets, project just the numeric field into the Graph selection set and use LINQ (Average/Sum/Max/Min) over the returned items, paging through all matches first so the figure is not computed from a single page. Where the aggregate spans a large or unbounded set, or drives reporting, source it from the system of record instead - a SQL query, a Commerce/CMS API, or a nightly-computed figure cached in your own store - rather than from the search index.",
       "messageFormat": "Find '{0}(...)' has no clean Graph SDK translation; numeric aggregation must be re-implemented separately",
       "isAutoFixable": false
     },
@@ -590,6 +599,7 @@
       "caveats": [
         "Optimizely Graph does not expose server-side numeric aggregation (average/sum/min/max) over a field the way Find's AverageOf()/SumOf()/MaximumOf()/MinimumOf() do. Equivalent aggregates must be computed in application code after retrieving the matching results, or via a separate reporting/analytics data store."
       ],
+      "suggestedApproach": "Compute the aggregate yourself. For small result sets, project just the numeric field into the Graph selection set and use LINQ (Average/Sum/Max/Min) over the returned items, paging through all matches first so the figure is not computed from a single page. Where the aggregate spans a large or unbounded set, or drives reporting, source it from the system of record instead - a SQL query, a Commerce/CMS API, or a nightly-computed figure cached in your own store - rather than from the search index.",
       "messageFormat": "Find '{0}(...)' has no clean Graph SDK translation; numeric aggregation must be re-implemented separately",
       "isAutoFixable": false
     },
@@ -610,6 +620,7 @@
       "caveats": [
         "Optimizely Graph does not expose server-side numeric aggregation (average/sum/min/max) over a field the way Find's AverageOf()/SumOf()/MaximumOf()/MinimumOf() do. Equivalent aggregates must be computed in application code after retrieving the matching results, or via a separate reporting/analytics data store."
       ],
+      "suggestedApproach": "Compute the aggregate yourself. A max/min over an indexed field is often better expressed as an ordered query - request the single top result with an 'orderBy' on that field and a limit of 1 - which avoids fetching the whole set. Where that is not possible, project the field into the selection set and use LINQ over all matching items, or source the figure from the system of record (SQL, a Commerce/CMS API, or a cached precomputed value) rather than from the search index.",
       "messageFormat": "Find '{0}(...)' has no clean Graph SDK translation; numeric aggregation must be re-implemented separately",
       "isAutoFixable": false
     },
@@ -630,6 +641,7 @@
       "caveats": [
         "Optimizely Graph does not expose server-side numeric aggregation (average/sum/min/max) over a field the way Find's AverageOf()/SumOf()/MaximumOf()/MinimumOf() do. Equivalent aggregates must be computed in application code after retrieving the matching results, or via a separate reporting/analytics data store."
       ],
+      "suggestedApproach": "Compute the aggregate yourself. A max/min over an indexed field is often better expressed as an ordered query - request the single top result with an 'orderBy' on that field and a limit of 1 - which avoids fetching the whole set. Where that is not possible, project the field into the selection set and use LINQ over all matching items, or source the figure from the system of record (SQL, a Commerce/CMS API, or a cached precomputed value) rather than from the search index.",
       "messageFormat": "Find '{0}(...)' has no clean Graph SDK translation; numeric aggregation must be re-implemented separately",
       "isAutoFixable": false
     },

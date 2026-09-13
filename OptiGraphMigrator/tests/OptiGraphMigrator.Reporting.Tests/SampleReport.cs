@@ -36,7 +36,8 @@ namespace OptiGraphMigrator.Reporting.Tests
                     graphQlSnippet: null,
                     title: "Custom scoring has no Graph equivalent",
                     translatability: "blocked",
-                    docsUrl: "https://github.com/optigraphmigrator/OptiGraphMigrator/blob/main/docs/rules/OGM202.md")
+                    docsUrl: "https://github.com/optigraphmigrator/OptiGraphMigrator/blob/main/docs/rules/OGM202.md",
+                    suggestedApproach: "Optimizely Graph has no per-query boost function. Retrieve the candidate set from Graph, then apply the boost weights in application code when ordering the results.")
             };
 
             return new MigrationReport(findings);

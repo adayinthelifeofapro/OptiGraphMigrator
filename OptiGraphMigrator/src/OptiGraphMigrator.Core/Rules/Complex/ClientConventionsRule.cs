@@ -63,6 +63,14 @@ namespace OptiGraphMigrator.Core.Rules.Complex
                 "re-created there.",
             };
 
+            const string suggestedApproach =
+                "Inventory what each convention call does (which types are indexed, which fields are included " +
+                "or excluded) and recreate it as Graph content type configuration: annotate the CMS content " +
+                "types and re-run content type synchronisation so the Graph schema exposes exactly those " +
+                "fields, then delete the convention registration from startup. Verify the resulting schema in " +
+                "the Graph admin UI before removing the Find code, and treat any field you relied on but " +
+                "cannot expose in Graph as a separate migration task.";
+
             return new RuleMatch(
                 Id,
                 context.Segment.Invocation.GetLocation(),
@@ -70,7 +78,8 @@ namespace OptiGraphMigrator.Core.Rules.Complex
                 "Configure the equivalent content type / field in the Optimizely Graph schema",
                 caveats,
                 graphQlSnippet: null,
-                messageArguments: new object?[] { context.Segment.MethodName });
+                messageArguments: new object?[] { context.Segment.MethodName },
+                suggestedApproach: suggestedApproach);
         }
     }
 }

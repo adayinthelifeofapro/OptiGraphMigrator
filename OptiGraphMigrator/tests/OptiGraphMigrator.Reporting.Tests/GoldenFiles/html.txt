@@ -26,6 +26,8 @@ pre { padding: 0.6rem; overflow-x: auto; }
 .equivalent-yes { background: rgba(61, 220, 132, 0.15); color: #3ddc84; }
 .equivalent-no { background: rgba(255, 92, 92, 0.15); color: #ff5c5c; }
 .no-equivalent-text { color: #ff8080; }
+.suggested-approach { color: #b9c0d4; font-size: 0.9rem; line-height: 1.5; border-left: 3px solid #5aa9f8; background: #1a1e2b; }
+.suggested-approach-label { display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: #5aa9f8; margin-bottom: 0.35rem; font-weight: 600; }
 </style>
 </head>
 <body>
@@ -55,6 +57,7 @@ pre { padding: 0.6rem; overflow-x: auto; }
 <tr><td>FindUsageSamples.cs:10</td><td><code>Find &#39;Filter(...)&#39; can be translated to a Graph &#39;where&#39; clause</code></td><td><code>where</code></td><td><span class="equivalent-yes" title="Mapped">&#10004;</span></td></tr>
 <tr><td colspan="4"><pre>{ where: { title: { eq: &quot;foo&quot; } } }</pre></td></tr>
 <tr><td>FindUsageSamples.cs:20</td><td><code>Find custom scoring &#39;Boost(...)&#39; has no clean Graph SDK translation</code></td><td><span class="no-equivalent-text">— NO EQUIVALENT —</span></td><td><span class="equivalent-no" title="No equivalent">&#9888;</span></td></tr>
+<tr><td colspan="4" class="suggested-approach"><span class="suggested-approach-label">Suggested approach</span>Optimizely Graph has no per-query boost function. Retrieve the candidate set from Graph, then apply the boost weights in application code when ordering the results.</td></tr>
 </tbody>
 </table>
 </div>

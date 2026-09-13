@@ -54,7 +54,8 @@ namespace OptiGraphMigrator.Core.Rules
             string graphEquivalent,
             IReadOnlyList<string> caveats,
             string? graphQlSnippet = null,
-            IReadOnlyList<object?>? messageArguments = null)
+            IReadOnlyList<object?>? messageArguments = null,
+            string? suggestedApproach = null)
         {
             RuleId = ruleId;
             Location = location;
@@ -63,6 +64,7 @@ namespace OptiGraphMigrator.Core.Rules
             Caveats = caveats;
             GraphQlSnippet = graphQlSnippet;
             MessageArguments = messageArguments ?? new object?[0];
+            SuggestedApproach = suggestedApproach;
         }
 
         /// <summary>Id of the rule that produced this match.</summary>
@@ -85,6 +87,13 @@ namespace OptiGraphMigrator.Core.Rules
 
         /// <summary>Arguments substituted into the rule's message format.</summary>
         public IReadOnlyList<object?> MessageArguments { get; }
+
+        /// <summary>
+        /// Concrete guidance on how a developer might implement equivalent behaviour themselves
+        /// when Graph offers no direct mapping. Distinct from <see cref="Caveats"/>, which
+        /// describes behavioural differences of an existing mapping.
+        /// </summary>
+        public string? SuggestedApproach { get; }
     }
 
     /// <summary>

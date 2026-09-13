@@ -61,7 +61,12 @@ implemented across five projects with a strict dependency direction
      it falls back to the declarative catalogue (`Rules/RuleCatalogueLoader.cs`), which loads
      `Resources/find-to-graph.rules.json` (embedded resource) — a table of `containingType` +
      `methodName` + arg-count patterns mapped to a Graph equivalent, an optional GraphQL snippet
-     template, severity, and caveats. Users can extend/override this catalogue with an
+     template, severity, and caveats. Rules with `translatability: "blocked"` must also declare a
+     `suggestedApproach` string — concrete guidance on how a developer can implement equivalent
+     behaviour by hand, since there is no Graph construct to point at. `MigrationRule.Validate()`
+     enforces this at load time, and it is surfaced end-to-end: through `RuleMatch`/diagnostic
+     properties, into `MigrationFinding.SuggestedApproach`, and rendered by every report writer.
+     Users can extend/override this catalogue with an
      `optigraph.rules.json` file (same schema) discovered by walking up from the scanned path,
      the same way `.editorconfig` is discovered.
    - Adding a new Find→Graph mapping usually means adding one entry to

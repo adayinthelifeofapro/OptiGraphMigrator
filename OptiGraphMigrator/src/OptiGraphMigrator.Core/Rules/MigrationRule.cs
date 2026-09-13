@@ -74,6 +74,13 @@ namespace OptiGraphMigrator.Core.Rules
         /// <summary>Behavioural differences a human must review before accepting the mapping.</summary>
         public IList<string> Caveats { get; set; } = new List<string>();
 
+        /// <summary>
+        /// Concrete guidance on how a developer might implement equivalent behaviour themselves.
+        /// Required when <see cref="Translatability"/> is <see cref="Translatability.Blocked"/>,
+        /// since there is no Graph construct to point at in that case.
+        /// </summary>
+        public string SuggestedApproach { get; set; } = string.Empty;
+
         /// <summary>Explicit documentation link. Falls back to a conventional per-rule doc path.</summary>
         public string? DocsUrl { get; set; }
 
@@ -113,6 +120,13 @@ namespace OptiGraphMigrator.Core.Rules
             if (Translatability != Translatability.Blocked && string.IsNullOrWhiteSpace(GraphEquivalent))
             {
                 throw new InvalidOperationException("Rule " + Id + " is translatable but declares no GraphEquivalent.");
+            }
+
+            if (Translatability == Translatability.Blocked && string.IsNullOrWhiteSpace(SuggestedApproach))
+            {
+                throw new InvalidOperationException(
+                    "Rule " + Id + " is blocked but declares no SuggestedApproach; blocked rules must tell the " +
+                    "developer how to implement equivalent behaviour themselves.");
             }
 
             if (IsAutoFixable && Translatability != Translatability.Exact)

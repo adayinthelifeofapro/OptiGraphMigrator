@@ -1,5 +1,6 @@
 WARNING OGM001   FindUsageSamples.cs(10,5): Find 'Filter(...)' can be translated to a Graph 'where' clause
         -> Graph equivalent: where
 INFO    OGM202   FindUsageSamples.cs(20,8): Find custom scoring 'Boost(...)' has no clean Graph SDK translation
+        -> Suggested approach: Optimizely Graph has no per-query boost function. Retrieve the candidate set from Graph, then apply the boost weights in application code when ordering the results.
 
 Summary: 0 error(s), 1 warning(s), 1 info

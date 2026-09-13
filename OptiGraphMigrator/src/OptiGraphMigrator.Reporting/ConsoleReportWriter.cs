@@ -22,6 +22,11 @@ namespace OptiGraphMigrator.Reporting
                 {
                     writer.WriteLine($"        -> Graph equivalent: {finding.GraphEquivalent}");
                 }
+
+                if (!string.IsNullOrEmpty(finding.SuggestedApproach))
+                {
+                    writer.WriteLine($"        -> Suggested approach: {finding.SuggestedApproach}");
+                }
             }
 
             writer.WriteLine();

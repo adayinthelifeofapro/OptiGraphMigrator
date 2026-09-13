@@ -45,6 +45,14 @@ namespace OptiGraphMigrator.Core.Rules.Complex
                 "relevance regression.",
             };
 
+            const string suggestedApproach =
+                "Move synonym expansion in front of the query. Keep the synonym dictionary somewhere editable " +
+                "(a CMS settings block, a JSON resource, or a database table), load it through a cached " +
+                "service, and expand the user's terms before building the Graph query - then match the " +
+                "expanded set with an OR-composed 'where' clause or a space-joined full text term list. " +
+                "Export the existing Find synonym list first so the new dictionary starts with parity, and " +
+                "add a regression test over a handful of known synonym searches to catch relevance drift.";
+
             return new RuleMatch(
                 Id,
                 context.Segment.Invocation.GetLocation(),
@@ -52,7 +60,8 @@ namespace OptiGraphMigrator.Core.Rules.Complex
                 string.Empty,
                 caveats,
                 graphQlSnippet: null,
-                messageArguments: new object?[] { context.Segment.MethodName });
+                messageArguments: new object?[] { context.Segment.MethodName },
+                suggestedApproach: suggestedApproach);
         }
     }
 }

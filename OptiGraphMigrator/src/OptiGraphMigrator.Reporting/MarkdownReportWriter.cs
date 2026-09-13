@@ -45,6 +45,22 @@ namespace OptiGraphMigrator.Reporting
                 }
 
                 writer.WriteLine();
+
+                writer.WriteLine("### Suggested approaches");
+                writer.WriteLine();
+                writer.WriteLine("These patterns have no Optimizely Graph equivalent, so the behaviour has to be re-implemented. Suggested starting points:");
+                writer.WriteLine();
+
+                foreach (var group in topBlocking)
+                {
+                    var suggestedApproach = group.Select(f => f.SuggestedApproach).FirstOrDefault(s => !string.IsNullOrEmpty(s));
+                    if (!string.IsNullOrEmpty(suggestedApproach))
+                    {
+                        writer.WriteLine($"- **{group.Key}**: {suggestedApproach}");
+                    }
+                }
+
+                writer.WriteLine();
             }
 
             writer.WriteLine("## Findings");
@@ -64,6 +80,13 @@ namespace OptiGraphMigrator.Reporting
                     writer.WriteLine("  ```graphql");
                     writer.WriteLine($"  {finding.GraphQlSnippet}");
                     writer.WriteLine("  ```");
+                    writer.WriteLine();
+                }
+
+                if (!string.IsNullOrEmpty(finding.SuggestedApproach))
+                {
+                    writer.WriteLine();
+                    writer.WriteLine($"> **Suggested approach:** {finding.SuggestedApproach}");
                     writer.WriteLine();
                 }
             }
