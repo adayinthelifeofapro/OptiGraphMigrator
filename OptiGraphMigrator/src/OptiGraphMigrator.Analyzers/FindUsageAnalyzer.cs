@@ -1,9 +1,11 @@
+using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Text;
 using OptiGraphMigrator.Core.Analysis;
 using OptiGraphMigrator.Core.Rules;
 
@@ -38,13 +40,23 @@ namespace OptiGraphMigrator.Analyzers
 
                 var engine = new MigrationRuleEngine(RuleCatalogueLoader.Default);
 
+                // The chain walker follows shared variable reuse across statements, so the same
+                // underlying segment can be discovered - and would otherwise be re-reported - once
+                // per downstream chain that reuses it. Track (rule, location) pairs already
+                // reported for this compilation to collapse those duplicates.
+                var reported = new ConcurrentDictionary<(string RuleId, SyntaxTree? Tree, TextSpan Span), byte>();
+
                 compilationStartContext.RegisterSyntaxNodeAction(
-                    nodeContext => Analyze(nodeContext, symbols, engine),
+                    nodeContext => Analyze(nodeContext, symbols, engine, reported),
                     SyntaxKind.InvocationExpression);
             });
         }
 
-        private static void Analyze(SyntaxNodeAnalysisContext context, FindSymbolIndex symbols, MigrationRuleEngine engine)
+        private static void Analyze(
+            SyntaxNodeAnalysisContext context,
+            FindSymbolIndex symbols,
+            MigrationRuleEngine engine,
+            ConcurrentDictionary<(string RuleId, SyntaxTree? Tree, TextSpan Span), byte> reported)
         {
             var invocation = (InvocationExpressionSyntax)context.Node;
 
@@ -73,7 +85,10 @@ namespace OptiGraphMigrator.Analyzers
             if (chain.Root is not null && chain.Terminal is null)
             {
                 var location = chain.Span?.GetLocation() ?? invocation.GetLocation();
-                context.ReportDiagnostic(Diagnostic.Create(DiagnosticDescriptors.UnresolvedChain, location));
+                if (reported.TryAdd((DiagnosticDescriptors.UnresolvedChain.Id, location.SourceTree, location.SourceSpan), 0))
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(DiagnosticDescriptors.UnresolvedChain, location));
+                }
             }
 
             var translations = engine.EvaluateChain(chain, context.SemanticModel, symbols, context.CancellationToken);
@@ -88,6 +103,11 @@ namespace OptiGraphMigrator.Analyzers
 
                 var descriptor = ResolveDescriptor(match.RuleId);
                 if (descriptor is null)
+                {
+                    continue;
+                }
+
+                if (!reported.TryAdd((match.RuleId, match.Location.SourceTree, match.Location.SourceSpan), 0))
                 {
                     continue;
                 }
