@@ -4,39 +4,59 @@
 <meta charset="utf-8" />
 <title>OptiGraphMigrator report</title>
 <style>
-body { font-family: Segoe UI, Arial, sans-serif; margin: 2rem; color: #222; }
+body { font-family: Segoe UI, Arial, sans-serif; margin: 2rem; background: #12141c; color: #e6e8ef; }
+.panel { background: #171a24; border: 1px solid #2a2e3d; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
+.panel-title { font-size: 0.85rem; letter-spacing: 0.08em; color: #8b90a3; margin: 0 0 1rem 0; text-transform: uppercase; }
+.summary-grid { display: flex; flex-wrap: wrap; gap: 1rem; }
+.summary-card { flex: 1 1 160px; background: #1d2130; border: 1px solid #2a2e3d; border-radius: 10px; padding: 1rem 1.25rem; }
+.summary-label { font-size: 0.75rem; color: #8b90a3; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.5rem; }
+.summary-value { font-size: 2rem; font-weight: 600; }
+.summary-sub { font-size: 0.85rem; margin-left: 0.4rem; }
+.summary-value.error, .summary-sub.error { color: #ff5c5c; }
+.summary-sub.ok { color: #3ddc84; }
 table { border-collapse: collapse; width: 100%; margin-bottom: 1.5rem; }
-th, td { border: 1px solid #ccc; padding: 0.4rem 0.6rem; text-align: left; vertical-align: top; }
-th { background: #f2f2f2; }
-code, pre { background: #f5f5f5; }
-.severity-error { color: #b00020; font-weight: bold; }
-.severity-warning { color: #9a6700; font-weight: bold; }
-.severity-info { color: #0b6ed0; }
+th, td { border-bottom: 1px solid #2a2e3d; padding: 0.6rem 0.75rem; text-align: left; vertical-align: top; }
+th { color: #8b90a3; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
+code, pre { background: #0d0f16; color: #cfd3e0; border-radius: 4px; padding: 0.1rem 0.35rem; }
+pre { padding: 0.6rem; overflow-x: auto; }
+.severity-error { color: #ff5c5c; font-weight: bold; }
+.severity-warning { color: #f0b02e; font-weight: bold; }
+.severity-info { color: #5aa9f8; }
+.equivalent-yes, .equivalent-no { display: inline-flex; align-items: center; justify-content: center; width: 1.6rem; height: 1.6rem; border-radius: 50%; font-size: 0.9rem; }
+.equivalent-yes { background: rgba(61, 220, 132, 0.15); color: #3ddc84; }
+.equivalent-no { background: rgba(255, 92, 92, 0.15); color: #ff5c5c; }
+.no-equivalent-text { color: #ff8080; }
 </style>
 </head>
 <body>
 <h1>OptiGraphMigrator report</h1>
-<p>0 error(s), 1 warning(s), 1 info</p>
-<ul>
-<li>Exact (auto-fixable): 1</li>
-<li>Caveat (needs review): 0</li>
-<li>Blocked (no clean translation): 1</li>
-</ul>
-<h2>Top blocking patterns</h2>
+<div class="panel">
+<p class="panel-title">Summary</p>
+<div class="summary-grid">
+<div class="summary-card"><div class="summary-label">Total Calls Found</div><div class="summary-value">2</div></div>
+<div class="summary-card"><div class="summary-label">Mapped to Optimizely Graph</div><div class="summary-value">1 <span class="summary-sub ok">50.0%</span></div></div>
+<div class="summary-card"><div class="summary-label">No Equivalent</div><div class="summary-value error">1 <span class="summary-sub error">50.0%</span></div></div>
+<div class="summary-card"><div class="summary-label">Files Affected</div><div class="summary-value">1</div></div>
+</div>
+</div>
+<div class="panel">
+<p class="panel-title">Top blocking patterns</p>
 <table>
 <thead><tr><th>Rule</th><th>Title</th><th>Occurrences</th></tr></thead>
 <tbody>
 <tr><td>OGM202</td><td>Custom scoring has no Graph equivalent</td><td>1</td></tr>
 </tbody>
 </table>
-<h2>Findings</h2>
+</div>
+<div class="panel">
 <table>
-<thead><tr><th>Severity</th><th>Rule</th><th>Location</th><th>Message</th><th>Graph equivalent</th></tr></thead>
+<thead><tr><th>Location</th><th>Call</th><th>Optimizely Graph Equivalent</th><th>Equivalent</th></tr></thead>
 <tbody>
-<tr><td class="severity-warning">warning</td><td>OGM001</td><td>FindUsageSamples.cs(10,5)</td><td>Find &#39;Filter(...)&#39; can be translated to a Graph &#39;where&#39; clause</td><td><code>where</code></td></tr>
-<tr><td colspan="5"><pre>{ where: { title: { eq: &quot;foo&quot; } } }</pre></td></tr>
-<tr><td class="severity-info">info</td><td>OGM202</td><td>FindUsageSamples.cs(20,8)</td><td>Find custom scoring &#39;Boost(...)&#39; has no clean Graph SDK translation</td><td></td></tr>
+<tr><td>FindUsageSamples.cs:10</td><td><code>Find &#39;Filter(...)&#39; can be translated to a Graph &#39;where&#39; clause</code></td><td><code>where</code></td><td><span class="equivalent-yes" title="Mapped">&#10004;</span></td></tr>
+<tr><td colspan="4"><pre>{ where: { title: { eq: &quot;foo&quot; } } }</pre></td></tr>
+<tr><td>FindUsageSamples.cs:20</td><td><code>Find custom scoring &#39;Boost(...)&#39; has no clean Graph SDK translation</code></td><td><span class="no-equivalent-text">— NO EQUIVALENT —</span></td><td><span class="equivalent-no" title="No equivalent">&#9888;</span></td></tr>
 </tbody>
 </table>
+</div>
 </body>
 </html>

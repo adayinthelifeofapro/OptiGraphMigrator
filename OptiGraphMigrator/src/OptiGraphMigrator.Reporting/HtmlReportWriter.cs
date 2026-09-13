@@ -16,24 +16,53 @@ namespace OptiGraphMigrator.Reporting
             writer.WriteLine("<meta charset=\"utf-8\" />");
             writer.WriteLine("<title>OptiGraphMigrator report</title>");
             writer.WriteLine("<style>");
-            writer.WriteLine("body { font-family: Segoe UI, Arial, sans-serif; margin: 2rem; color: #222; }");
+            writer.WriteLine("body { font-family: Segoe UI, Arial, sans-serif; margin: 2rem; background: #12141c; color: #e6e8ef; }");
+            writer.WriteLine(".panel { background: #171a24; border: 1px solid #2a2e3d; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }");
+            writer.WriteLine(".panel-title { font-size: 0.85rem; letter-spacing: 0.08em; color: #8b90a3; margin: 0 0 1rem 0; text-transform: uppercase; }");
+            writer.WriteLine(".summary-grid { display: flex; flex-wrap: wrap; gap: 1rem; }");
+            writer.WriteLine(".summary-card { flex: 1 1 160px; background: #1d2130; border: 1px solid #2a2e3d; border-radius: 10px; padding: 1rem 1.25rem; }");
+            writer.WriteLine(".summary-label { font-size: 0.75rem; color: #8b90a3; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.5rem; }");
+            writer.WriteLine(".summary-value { font-size: 2rem; font-weight: 600; }");
+            writer.WriteLine(".summary-sub { font-size: 0.85rem; margin-left: 0.4rem; }");
+            writer.WriteLine(".summary-value.error, .summary-sub.error { color: #ff5c5c; }");
+            writer.WriteLine(".summary-sub.ok { color: #3ddc84; }");
             writer.WriteLine("table { border-collapse: collapse; width: 100%; margin-bottom: 1.5rem; }");
-            writer.WriteLine("th, td { border: 1px solid #ccc; padding: 0.4rem 0.6rem; text-align: left; vertical-align: top; }");
-            writer.WriteLine("th { background: #f2f2f2; }");
-            writer.WriteLine("code, pre { background: #f5f5f5; }");
-            writer.WriteLine(".severity-error { color: #b00020; font-weight: bold; }");
-            writer.WriteLine(".severity-warning { color: #9a6700; font-weight: bold; }");
-            writer.WriteLine(".severity-info { color: #0b6ed0; }");
+            writer.WriteLine("th, td { border-bottom: 1px solid #2a2e3d; padding: 0.6rem 0.75rem; text-align: left; vertical-align: top; }");
+            writer.WriteLine("th { color: #8b90a3; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }");
+            writer.WriteLine("code, pre { background: #0d0f16; color: #cfd3e0; border-radius: 4px; padding: 0.1rem 0.35rem; }");
+            writer.WriteLine("pre { padding: 0.6rem; overflow-x: auto; }");
+            writer.WriteLine(".severity-error { color: #ff5c5c; font-weight: bold; }");
+            writer.WriteLine(".severity-warning { color: #f0b02e; font-weight: bold; }");
+            writer.WriteLine(".severity-info { color: #5aa9f8; }");
+            writer.WriteLine(".equivalent-yes, .equivalent-no { display: inline-flex; align-items: center; justify-content: center; width: 1.6rem; height: 1.6rem; border-radius: 50%; font-size: 0.9rem; }");
+            writer.WriteLine(".equivalent-yes { background: rgba(61, 220, 132, 0.15); color: #3ddc84; }");
+            writer.WriteLine(".equivalent-no { background: rgba(255, 92, 92, 0.15); color: #ff5c5c; }");
+            writer.WriteLine(".no-equivalent-text { color: #ff8080; }");
             writer.WriteLine("</style>");
             writer.WriteLine("</head>");
             writer.WriteLine("<body>");
             writer.WriteLine("<h1>OptiGraphMigrator report</h1>");
-            writer.WriteLine($"<p>{report.ErrorCount} error(s), {report.WarningCount} warning(s), {report.InfoCount} info</p>");
-            writer.WriteLine("<ul>");
-            writer.WriteLine($"<li>Exact (auto-fixable): {report.ExactCount}</li>");
-            writer.WriteLine($"<li>Caveat (needs review): {report.CaveatCount}</li>");
-            writer.WriteLine($"<li>Blocked (no clean translation): {report.BlockedCount}</li>");
-            writer.WriteLine("</ul>");
+
+            var mappedCount = report.ExactCount + report.CaveatCount;
+            var totalCalls = report.Findings.Count;
+            var noEquivalentCount = report.BlockedCount;
+            var filesAffected = report.Findings.Select(f => f.FilePath).Distinct().Count();
+            var mappedPercent = totalCalls == 0 ? 0 : mappedCount * 100.0 / totalCalls;
+            var noEquivalentPercent = totalCalls == 0 ? 0 : noEquivalentCount * 100.0 / totalCalls;
+
+            writer.WriteLine("<div class=\"panel\">");
+            writer.WriteLine("<p class=\"panel-title\">Summary</p>");
+            writer.WriteLine("<div class=\"summary-grid\">");
+            writer.WriteLine("<div class=\"summary-card\"><div class=\"summary-label\">Total Calls Found</div>" +
+                $"<div class=\"summary-value\">{totalCalls}</div></div>");
+            writer.WriteLine("<div class=\"summary-card\"><div class=\"summary-label\">Mapped to Optimizely Graph</div>" +
+                $"<div class=\"summary-value\">{mappedCount} <span class=\"summary-sub ok\">{mappedPercent:0.0}%</span></div></div>");
+            writer.WriteLine("<div class=\"summary-card\"><div class=\"summary-label\">No Equivalent</div>" +
+                $"<div class=\"summary-value error\">{noEquivalentCount} <span class=\"summary-sub error\">{noEquivalentPercent:0.0}%</span></div></div>");
+            writer.WriteLine("<div class=\"summary-card\"><div class=\"summary-label\">Files Affected</div>" +
+                $"<div class=\"summary-value\">{filesAffected}</div></div>");
+            writer.WriteLine("</div>");
+            writer.WriteLine("</div>");
 
             if (report.Findings.Count == 0)
             {
@@ -52,7 +81,8 @@ namespace OptiGraphMigrator.Reporting
 
             if (topBlocking.Count > 0)
             {
-                writer.WriteLine("<h2>Top blocking patterns</h2>");
+                writer.WriteLine("<div class=\"panel\">");
+                writer.WriteLine("<p class=\"panel-title\">Top blocking patterns</p>");
                 writer.WriteLine("<table>");
                 writer.WriteLine("<thead><tr><th>Rule</th><th>Title</th><th>Occurrences</th></tr></thead>");
                 writer.WriteLine("<tbody>");
@@ -65,28 +95,35 @@ namespace OptiGraphMigrator.Reporting
 
                 writer.WriteLine("</tbody>");
                 writer.WriteLine("</table>");
+                writer.WriteLine("</div>");
             }
 
-            writer.WriteLine("<h2>Findings</h2>");
+            writer.WriteLine("<div class=\"panel\">");
             writer.WriteLine("<table>");
-            writer.WriteLine("<thead><tr><th>Severity</th><th>Rule</th><th>Location</th><th>Message</th><th>Graph equivalent</th></tr></thead>");
+            writer.WriteLine("<thead><tr><th>Location</th><th>Call</th><th>Optimizely Graph Equivalent</th><th>Equivalent</th></tr></thead>");
             writer.WriteLine("<tbody>");
 
             foreach (var finding in report.Findings)
             {
-                var location = $"{finding.FilePath}({finding.StartLine},{finding.StartColumn})";
-                var graphEquivalent = string.IsNullOrEmpty(finding.GraphEquivalent) ? string.Empty : $"<code>{Encode(finding.GraphEquivalent!)}</code>";
-                var severityClass = $"severity-{finding.Severity.ToLowerInvariant()}";
-                writer.WriteLine($"<tr><td class=\"{severityClass}\">{Encode(finding.Severity)}</td><td>{Encode(finding.RuleId)}</td><td>{Encode(location)}</td><td>{Encode(finding.Message)}</td><td>{graphEquivalent}</td></tr>");
+                var location = $"{finding.FilePath}:{finding.StartLine}";
+                var hasEquivalent = !string.IsNullOrEmpty(finding.GraphEquivalent);
+                var graphEquivalentText = hasEquivalent
+                    ? $"<code>{Encode(finding.GraphEquivalent!)}</code>"
+                    : "<span class=\"no-equivalent-text\">— NO EQUIVALENT —</span>";
+                var equivalentIcon = hasEquivalent
+                    ? "<span class=\"equivalent-yes\" title=\"Mapped\">&#10004;</span>"
+                    : "<span class=\"equivalent-no\" title=\"No equivalent\">&#9888;</span>";
+                writer.WriteLine($"<tr><td>{Encode(location)}</td><td><code>{Encode(finding.Message)}</code></td><td>{graphEquivalentText}</td><td>{equivalentIcon}</td></tr>");
 
                 if (!string.IsNullOrEmpty(finding.GraphQlSnippet))
                 {
-                    writer.WriteLine($"<tr><td colspan=\"5\"><pre>{Encode(finding.GraphQlSnippet!)}</pre></td></tr>");
+                    writer.WriteLine($"<tr><td colspan=\"4\"><pre>{Encode(finding.GraphQlSnippet!)}</pre></td></tr>");
                 }
             }
 
             writer.WriteLine("</tbody>");
             writer.WriteLine("</table>");
+            writer.WriteLine("</div>");
             writer.WriteLine("</body>");
             writer.WriteLine("</html>");
         }
