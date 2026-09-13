@@ -3,6 +3,10 @@
     <Project Path="samples/EPiServer.Find.Stubs/EPiServer.Find.Stubs.csproj" />
     <Project Path="samples/SampleFindSolution/SampleFindSolution.csproj" />
   </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="../CLAUDE.md" />
+    <File Path="../README.md" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/OptiGraphMigrator.Core/OptiGraphMigrator.Core.csproj" />
     <Project Path="src/OptiGraphMigrator.Analyzers/OptiGraphMigrator.Analyzers.csproj" />
