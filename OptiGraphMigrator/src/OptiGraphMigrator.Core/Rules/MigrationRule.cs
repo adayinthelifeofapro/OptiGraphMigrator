@@ -11,7 +11,7 @@ namespace OptiGraphMigrator.Core.Rules
     {
         /// <summary>
         /// Metadata name of the declaring type, for example
-        /// <c>EPiServer.Find.Api.Querying.ITypeSearch`1</c>. For extension methods this is the
+        /// <c>EPiServer.Find.ITypeSearch`1</c>. For extension methods this is the
         /// static class that declares the method.
         /// </summary>
         public string ContainingType { get; set; } = string.Empty;

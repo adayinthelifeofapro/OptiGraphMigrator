@@ -2,24 +2,21 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using EPiServer.Find.Api.Querying;
 
 namespace EPiServer.Find
 {
     /// <summary>Minimal stand-in for the real Optimizely Find SDK, just enough surface area to
-    /// exercise every OptiGraphMigrator rule against representative call sites.</summary>
+    /// exercise every OptiGraphMigrator rule against representative call sites. Type and
+    /// namespace names mirror the real EPiServer.Find assemblies (verified against 13.6 and 16.6)
+    /// so the analyzers resolve the same symbols here as they do against a real solution.</summary>
     public interface IClient
     {
-        Api.Querying.ITypeSearch<T> Search<T>();
+        ITypeSearch<T> Search<T>();
 
-        Api.Querying.ITypeSearch<T> Search<T>(System.Globalization.CultureInfo culture);
+        ITypeSearch<T> Search<T>(System.Globalization.CultureInfo culture);
 
-        Api.Querying.IUnifiedSearch UnifiedSearch();
-
-        UnifiedSearch.UnifiedSearchRegistry UnifiedSearchFor { get; }
-
-        ClientConventions Conventions { get; }
-
-        Statistics.IStatisticTracker Statistics { get; }
+        IClientConventions Conventions { get; }
 
         void Index<T>(T content);
 
@@ -28,20 +25,11 @@ namespace EPiServer.Find
         void DeleteIndex<T>(T content);
     }
 
-    public sealed class ClientConventions
+    public interface IClientConventions
     {
-        public ClientConventions ForInstancesOf<T>() => this;
-
-        public ClientConventions ShouldIndex(Func<object, bool> predicate) => this;
-
-        public ClientConventions IncludeField(Expression<Func<object, object>> field) => this;
-
-        public ClientConventions ExcludeField(Expression<Func<object, object>> field) => this;
-
-        public ClientConventions RootType<T>() => this;
     }
 
-    /// <summary>Static singleton accessor, mirroring the real SDK's <c>SearchClient.Instance</c> convenience API.</summary>
+    /// <summary>Static singleton accessor, mirroring the real SDK convenience API <c>SearchClient.Instance</c>.</summary>
     public static class SearchClient
     {
         public static IClient Instance { get; } = null!;
@@ -57,235 +45,257 @@ namespace EPiServer.Find
     {
     }
 
+    public interface ISearch
+    {
+    }
+
+    public interface ISearch<T> : ISearch
+    {
+    }
+
+    public interface ITypeSearch<T> : ISearch<T>
+    {
+    }
+
+    public interface IUnifiedSearch : ISearch
+    {
+        IUnifiedSearch For<T>();
+
+        IUnifiedSearch WeightMultiplier<T>(double weight);
+    }
+
+    public sealed class FilterBuilder<T>
+    {
+        public FilterBuilder<T> And(Expression<Func<T, Filter>> filter) => this;
+
+        public FilterBuilder<T> Or(Expression<Func<T, Filter>> filter) => this;
+    }
+
+    public static class Filters
+    {
+        public static Filter Match(this object field, object value) => null!;
+
+        public static Filter Prefix(this object field, string value) => null!;
+
+        public static Filter GreaterThan(this object field, object value) => null!;
+
+        public static Filter LessThan(this object field, object value) => null!;
+
+        public static Filter Exists(this object field) => null!;
+
+        public static Filter In(this object field, IEnumerable<object> values) => null!;
+
+        public static Filter InRange(this object field, object from, object to) => null!;
+    }
+
     public static class ClientExtensions
     {
-        public static IClient Track<T>(this IClient client, string query, IEnumerable<T> results) => client;
+        public static FilterBuilder<T> BuildFilter<T>(this IClient client) => null!;
+
+        public static IUnifiedSearch UnifiedSearch(this IClient client) => null!;
     }
 
-    namespace Statistics
+    public static class TypeSearchExtensions
     {
-        public interface IStatisticTracker
-        {
-            IReadOnlyList<string> GetPopularSearchTerms(int count);
+        public static ITypeSearch<T> Filter<T>(this ITypeSearch<T> search, Expression<Func<T, Filter>> filter) => search;
 
-            IReadOnlyList<int> GetSearchesPerDay(DateTime from, DateTime to);
-        }
+        public static ITypeSearch<T> Filter<T>(this ITypeSearch<T> search, FilterBuilder<T> filter) => search;
+
+        /// <summary>Graph SDK equivalent used only so code-fix output for OGM001 compiles in tests.</summary>
+        public static ITypeSearch<T> Where<T>(this ITypeSearch<T> search, Expression<Func<T, Filter>> filter) => search;
+
+        public static ITypeSearch<T> For<T>(this ITypeSearch<T> search, string text) => search;
+
+        public static ITypeSearch<T> OrderBy<T>(this ITypeSearch<T> search, Expression<Func<T, object>> field) => search;
+
+        public static ITypeSearch<T> OrderByDescending<T>(this ITypeSearch<T> search, Expression<Func<T, object>> field) => search;
+
+        public static ITypeSearch<T> ThenBy<T>(this ITypeSearch<T> search, Expression<Func<T, object>> field) => search;
+
+        public static ITypeSearch<TResult> Select<T, TResult>(this ITypeSearch<T> search, Func<T, TResult> projection) => (ITypeSearch<TResult>)search;
+
+        public static ITypeSearch<T> TermsFacetFor<T>(this ITypeSearch<T> search, Expression<Func<T, object>> field, int size = 10) => search;
     }
 
-    namespace UnifiedSearch
+    public static class SearchExtensions
     {
-        public sealed class UnifiedSearchRegistry
-        {
-            public UnifiedSearchRegistry For<T>() => this;
+        public static ITypeSearch<T> Skip<T>(this ITypeSearch<T> search, int count) => search;
 
-            public UnifiedSearchRegistry WeightMultiplier<T>(double weight) => this;
-        }
+        public static ITypeSearch<T> Take<T>(this ITypeSearch<T> search, int count) => search;
+
+        public static IEnumerable<T> GetResult<T>(this ITypeSearch<T> search) => Array.Empty<T>();
+
+        public static Task<IEnumerable<T>> GetResultAsync<T>(this ITypeSearch<T> search) => Task.FromResult<IEnumerable<T>>(Array.Empty<T>());
+
+        public static ITypeSearch<T> StaticallyCacheFor<T>(this ITypeSearch<T> search, TimeSpan duration) => search;
     }
 
-    namespace Api.Querying
+    public static class QueryStringSearchExtensions
     {
-        public interface ISearch
-        {
-        }
+        public static ITypeSearch<T> InField<T>(this ITypeSearch<T> search, Expression<Func<T, object>> field) => search;
 
-        public interface ISearch<T> : ISearch
-        {
-        }
-
-        public interface IUnifiedSearch : ISearch
-        {
-            IUnifiedSearch For<T>();
-        }
-
-        public interface ITypeSearch<T> : ISearch<T>
-        {
-        }
-
-        public interface IFilterBuilder
-        {
-            IFilterBuilder And(IFilterBuilder other);
-
-            IFilterBuilder Or(IFilterBuilder other);
-
-            IFilterBuilder Not();
-
-            static IFilterBuilder MatchAll() => null!;
-
-            static IFilterBuilder MatchNone() => null!;
-        }
-
-        public static class FilterExtensions
-        {
-            public static ITypeSearch<T> Filter<T>(this ITypeSearch<T> search, Func<T, IFilterBuilder> filter) => search;
-
-            /// <summary>Graph SDK equivalent used only so code-fix output for OGM001 compiles in tests.</summary>
-            public static ITypeSearch<T> Where<T>(this ITypeSearch<T> search, Func<T, IFilterBuilder> filter) => search;
-        }
-
-        public static class FieldFilterExtensions
-        {
-            public static IFilterBuilder Match(this object field, object value) => null!;
-
-            public static IFilterBuilder StartsWith(this object field, string value) => null!;
-
-            public static IFilterBuilder GreaterThan(this object field, object value) => null!;
-
-            public static IFilterBuilder LessThan(this object field, object value) => null!;
-
-            public static IFilterBuilder Exists(this object field) => null!;
-
-            public static IFilterBuilder In(this object field, IEnumerable<object> values) => null!;
-
-            public static IFilterBuilder Between(this object field, object from, object to) => null!;
-        }
-
-        public static class OrderByExtensions
-        {
-            public static ITypeSearch<T> OrderBy<T>(this ITypeSearch<T> search, Expression<Func<T, object>> field) => search;
-
-            public static ITypeSearch<T> OrderByDescending<T>(this ITypeSearch<T> search, Expression<Func<T, object>> field) => search;
-
-            public static ITypeSearch<T> ThenBy<T>(this ITypeSearch<T> search, Expression<Func<T, object>> field) => search;
-        }
-
-        public static class SelectExtensions
-        {
-            public static ITypeSearch<TResult> Select<T, TResult>(this ITypeSearch<T> search, Func<T, TResult> projection) => (ITypeSearch<TResult>)search;
-        }
-
-        public static class ITypeSearchExtensions
-        {
-            public static ITypeSearch<T> For<T>(this ITypeSearch<T> search, string text) => search;
-
-            public static ITypeSearch<T> Skip<T>(this ITypeSearch<T> search, int count) => search;
-
-            public static ITypeSearch<T> Take<T>(this ITypeSearch<T> search, int count) => search;
-
-            public static IEnumerable<T> GetResult<T>(this ITypeSearch<T> search) => Array.Empty<T>();
-
-            public static Task<IEnumerable<T>> GetResultAsync<T>(this ITypeSearch<T> search) => Task.FromResult<IEnumerable<T>>(Array.Empty<T>());
-        }
-
-        public static class CacheExtensions
-        {
-            public static ITypeSearch<T> StaticallyCacheFor<T>(this ITypeSearch<T> search, TimeSpan duration) => search;
-        }
-
-        public static class CustomScoringExtensions
-        {
-            public static ITypeSearch<T> Boost<T>(this ITypeSearch<T> search, Expression<Func<T, object>> field, double weight) => search;
-
-            public static ITypeSearch<T> CustomScore<T>(this ITypeSearch<T> search, string script) => search;
-
-            public static ITypeSearch<T> FunctionScore<T>(this ITypeSearch<T> search, string function) => search;
-
-            public static ITypeSearch<T> InField<T>(this ITypeSearch<T> search, Expression<Func<T, object>> field) => search;
-
-            public static ITypeSearch<T> UsingSynonyms<T>(this ITypeSearch<T> search, string synonymSet) => search;
-        }
-
-        public static class HighlightExtensions
-        {
-            public static ITypeSearch<T> Highlight<T>(this ITypeSearch<T> search, Expression<Func<T, object>> field) => search;
-        }
-
-        public static class FacetExtensions
-        {
-            public static ITypeSearch<T> GetFacets<T>(this ITypeSearch<T> search, Expression<Func<T, object>> field) => search;
-
-            public static ITypeSearch<T> TermsFacetFor<T>(this ITypeSearch<T> search, Expression<Func<T, object>> field, int size = 10) => search;
-
-            public static ITypeSearch<T> RangeFacetFor<T>(this ITypeSearch<T> search, Expression<Func<T, object>> field, params object[] ranges) => search;
-        }
-
-        public static class RangeExtensions
-        {
-            public static ITypeSearch<T> Range<T>(this ITypeSearch<T> search, Expression<Func<T, object>> field, object from, object to) => search;
-        }
-
-        public static class LanguageExtensions
-        {
-            public static ITypeSearch<T> Language<T>(this ITypeSearch<T> search, string languageCode) => search;
-        }
-
-        public static class TotalMatchingExtensions
-        {
-            public static int TotalMatching<T>(this ITypeSearch<T> search) => 0;
-        }
-
-        public static class StatisticsExtensions
-        {
-            public static double AverageOf<T>(this ITypeSearch<T> search, Expression<Func<T, object>> field) => 0;
-
-            public static double SumOf<T>(this ITypeSearch<T> search, Expression<Func<T, object>> field) => 0;
-
-            public static object MaximumOf<T>(this ITypeSearch<T> search, Expression<Func<T, object>> field) => null!;
-
-            public static object MinimumOf<T>(this ITypeSearch<T> search, Expression<Func<T, object>> field) => null!;
-        }
-
-        public static class FuzzyExtensions
-        {
-            public static ITypeSearch<T> Fuzzy<T>(this ITypeSearch<T> search, double similarity = 0.5) => search;
-        }
-
-        public static class PromotedExtensions
-        {
-            public static ITypeSearch<T> BestBets<T>(this ITypeSearch<T> search, string query) => search;
-        }
-
-        public static class SuggestExtensions
-        {
-            public static ITypeSearch<T> DidYouMean<T>(this ITypeSearch<T> search, string text) => search;
-
-            public static ITypeSearch<T> Autocomplete<T>(this ITypeSearch<T> search, string text) => search;
-        }
-
-        public static class GeoExtensions
-        {
-            public static ITypeSearch<T> DistanceFrom<T>(this ITypeSearch<T> search, double latitude, double longitude) => search;
-        }
-
-        public static class SimilarityExtensions
-        {
-            public static ITypeSearch<T> MoreLikeThis<T>(this ITypeSearch<T> search, T content) => search;
-        }
-
-        public static class DeduplicationExtensions
-        {
-            public static ITypeSearch<T> RemoveDuplicates<T>(this ITypeSearch<T> search, Expression<Func<T, object>> field) => search;
-        }
-
-        public static class ScoreExtensions
-        {
-            public static ITypeSearch<T> MinScore<T>(this ITypeSearch<T> search, double threshold) => search;
-        }
+        public static ITypeSearch<T> UsingSynonyms<T>(this ITypeSearch<T> search, string synonymSet) => search;
     }
 
-    namespace Cms
+    /// <summary>Stub-only scoring helpers; the complex OGM202 rule matches these by name within the Find namespace.</summary>
+    public static class CustomScoringExtensions
     {
-        public interface IContentSearch<T>
-        {
-        }
+        public static ITypeSearch<T> Boost<T>(this ITypeSearch<T> search, Expression<Func<T, object>> field, double weight) => search;
 
-        public static class SearchExtensions
-        {
-            public static Api.Querying.ITypeSearch<T> FilterForVisitor<T>(this Api.Querying.ITypeSearch<T> search) => search;
+        public static ITypeSearch<T> CustomScore<T>(this ITypeSearch<T> search, string script) => search;
 
-            public static Api.Querying.ITypeSearch<T> ForVisitorGroup<T>(this Api.Querying.ITypeSearch<T> search, string visitorGroupId) => search;
-        }
+        public static ITypeSearch<T> FunctionScore<T>(this ITypeSearch<T> search, string function) => search;
+    }
 
-        public static class SearchContentExtensions
-        {
-            public static IEnumerable<object> GetContentResult<T>(this Api.Querying.ITypeSearch<T> search) => Array.Empty<object>();
+    public static class ContentLoaderFindExtensions
+    {
+        public static IEnumerable<T> Search<T>(this IContentLoader loader, string query) => Array.Empty<T>();
 
-            public static Task<IEnumerable<object>> GetContentResultAsync<T>(this Api.Querying.ITypeSearch<T> search) => Task.FromResult<IEnumerable<object>>(Array.Empty<object>());
-        }
+        public static IEnumerable<T> FindByContentType<T>(this IContentLoader loader) => Array.Empty<T>();
 
-        public static class ContentTreeExtensions
-        {
-            public static Api.Querying.IFilterBuilder MatchContained<T>(this Api.Querying.ITypeSearch<T> search, ContentReference contentLink) => null!;
-        }
+        public static IEnumerable<T> FindPagesWithCriteria<T>(this IContentLoader loader, object criteria) => Array.Empty<T>();
+
+        public static IEnumerable<T> GetChildrenWithFind<T>(this IContentLoader loader, ContentReference contentLink) => Array.Empty<T>();
+    }
+
+    public sealed class ContentReference
+    {
+        public static readonly ContentReference StartPage = new ContentReference();
+    }
+}
+
+namespace EPiServer.Find.ClientConventions
+{
+    public static class ConventionsExtensions
+    {
+        public static TypeConventionBuilder<T> ForInstancesOf<T>(this IClientConventions conventions) => null!;
+    }
+
+    public sealed class TypeConventionBuilder<T>
+    {
+        public TypeConventionBuilder<T> ShouldIndex(Func<T, bool> predicate) => this;
+
+        public TypeConventionBuilder<T> IncludeField(Expression<Func<T, object>> field) => this;
+
+        public TypeConventionBuilder<T> ExcludeField(Expression<Func<T, object>> field) => this;
+    }
+}
+
+namespace EPiServer.Find.Framework.Statistics
+{
+    public static class TrackableSearchExtensions
+    {
+        public static ITypeSearch<T> Track<T>(this ITypeSearch<T> search) => search;
+    }
+
+    public static class StatisticsClientExtensions
+    {
+        public static ITypeSearch<T> DidYouMean<T>(this ITypeSearch<T> search, string text) => search;
+
+        public static ITypeSearch<T> Autocomplete<T>(this ITypeSearch<T> search, string text) => search;
+    }
+}
+
+namespace EPiServer.Find.Cms
+{
+    public static class ContentSearchExtensions
+    {
+        public static ITypeSearch<T> FilterForVisitor<T>(this ITypeSearch<T> search) => search;
+    }
+
+    public static class SearchRequestExtensions
+    {
+        public static IEnumerable<object> GetContentResult<T>(this ITypeSearch<T> search) => Array.Empty<object>();
+
+        public static Task<IEnumerable<object>> GetContentResultAsync<T>(this ITypeSearch<T> search) => Task.FromResult<IEnumerable<object>>(Array.Empty<object>());
+    }
+
+    /// <summary>Stub-only; the real SDK has no ForVisitorGroup(). Kept so the OGM028 sample still compiles.</summary>
+    public static class SearchExtensions
+    {
+        public static ITypeSearch<T> ForVisitorGroup<T>(this ITypeSearch<T> search, string visitorGroupId) => search;
+    }
+
+    public static class ContentTreeExtensions
+    {
+        public static Filter MatchContained<T>(this ITypeSearch<T> search, ContentReference contentLink) => null!;
+    }
+}
+
+namespace EPiServer.Find.Api.Querying
+{
+    public abstract class Filter
+    {
+    }
+
+    // The extension classes below back rules OGM013-OGM018, OGM021, OGM023, OGM025, OGM026 and
+    // OGM029-OGM033. The real SDK exposes these features under different names (or not at all),
+    // so these stubs and their rules do not yet match real code; they are kept so the sample
+    // solution continues to exercise the rule plumbing until each rule is retargeted.
+    public static class HighlightExtensions
+    {
+        public static ITypeSearch<T> Highlight<T>(this ITypeSearch<T> search, Expression<Func<T, object>> field) => search;
+    }
+
+    public static class FacetExtensions
+    {
+        public static ITypeSearch<T> GetFacets<T>(this ITypeSearch<T> search, Expression<Func<T, object>> field) => search;
+    }
+
+    public static class RangeExtensions
+    {
+        public static ITypeSearch<T> Range<T>(this ITypeSearch<T> search, Expression<Func<T, object>> field, object from, object to) => search;
+    }
+
+    public static class LanguageExtensions
+    {
+        public static ITypeSearch<T> Language<T>(this ITypeSearch<T> search, string languageCode) => search;
+    }
+
+    public static class TotalMatchingExtensions
+    {
+        public static int TotalMatching<T>(this ITypeSearch<T> search) => 0;
+    }
+
+    public static class StatisticsExtensions
+    {
+        public static double AverageOf<T>(this ITypeSearch<T> search, Expression<Func<T, object>> field) => 0;
+
+        public static double SumOf<T>(this ITypeSearch<T> search, Expression<Func<T, object>> field) => 0;
+
+        public static object MaximumOf<T>(this ITypeSearch<T> search, Expression<Func<T, object>> field) => null!;
+
+        public static object MinimumOf<T>(this ITypeSearch<T> search, Expression<Func<T, object>> field) => null!;
+    }
+
+    public static class FuzzyExtensions
+    {
+        public static ITypeSearch<T> Fuzzy<T>(this ITypeSearch<T> search, double similarity = 0.5) => search;
+    }
+
+    public static class PromotedExtensions
+    {
+        public static ITypeSearch<T> BestBets<T>(this ITypeSearch<T> search, string query) => search;
+    }
+
+    public static class GeoExtensions
+    {
+        public static ITypeSearch<T> DistanceFrom<T>(this ITypeSearch<T> search, double latitude, double longitude) => search;
+    }
+
+    public static class SimilarityExtensions
+    {
+        public static ITypeSearch<T> MoreLikeThis<T>(this ITypeSearch<T> search, T content) => search;
+    }
+
+    public static class DeduplicationExtensions
+    {
+        public static ITypeSearch<T> RemoveDuplicates<T>(this ITypeSearch<T> search, Expression<Func<T, object>> field) => search;
+    }
+
+    public static class ScoreExtensions
+    {
+        public static ITypeSearch<T> MinScore<T>(this ITypeSearch<T> search, double threshold) => search;
     }
 }
 
@@ -293,24 +303,5 @@ namespace EPiServer
 {
     public interface IContentLoader
     {
-    }
-}
-
-namespace EPiServer.Find
-{
-    public static class ContentLoaderFindExtensions
-    {
-        public static System.Collections.Generic.IEnumerable<T> Search<T>(this IContentLoader loader, string query) => System.Array.Empty<T>();
-
-        public static System.Collections.Generic.IEnumerable<T> FindByContentType<T>(this IContentLoader loader) => System.Array.Empty<T>();
-
-        public static System.Collections.Generic.IEnumerable<T> FindPagesWithCriteria<T>(this IContentLoader loader, object criteria) => System.Array.Empty<T>();
-
-        public static System.Collections.Generic.IEnumerable<T> GetChildrenWithFind<T>(this IContentLoader loader, ContentReference contentLink) => System.Array.Empty<T>();
-    }
-
-    public sealed class ContentReference
-    {
-        public static readonly ContentReference StartPage = new ContentReference();
     }
 }

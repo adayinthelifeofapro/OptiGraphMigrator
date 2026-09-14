@@ -8,7 +8,7 @@
       "category": "filtering",
       "translatability": "exact",
       "findSymbolPattern": {
-        "containingType": "EPiServer.Find.Api.Querying.FilterExtensions",
+        "containingType": "EPiServer.Find.TypeSearchExtensions",
         "methodName": "Filter",
         "minArguments": 1,
         "matchDerivedTypes": true
@@ -28,7 +28,7 @@
       "category": "query",
       "translatability": "exact",
       "findSymbolPattern": {
-        "containingType": "EPiServer.Find.Api.Querying.ITypeSearchExtensions",
+        "containingType": "EPiServer.Find.TypeSearchExtensions",
         "methodName": "For",
         "minArguments": 1,
         "matchDerivedTypes": true
@@ -48,7 +48,7 @@
       "category": "query",
       "translatability": "exact",
       "findSymbolPattern": {
-        "containingType": "EPiServer.Find.Api.Querying.OrderByExtensions",
+        "containingType": "EPiServer.Find.TypeSearchExtensions",
         "methodName": "OrderBy",
         "minArguments": 1,
         "matchDerivedTypes": true
@@ -66,7 +66,7 @@
       "category": "query",
       "translatability": "exact",
       "findSymbolPattern": {
-        "containingType": "EPiServer.Find.Api.Querying.OrderByExtensions",
+        "containingType": "EPiServer.Find.TypeSearchExtensions",
         "methodName": "OrderByDescending",
         "minArguments": 1,
         "matchDerivedTypes": true
@@ -84,7 +84,7 @@
       "category": "query",
       "translatability": "exact",
       "findSymbolPattern": {
-        "containingType": "EPiServer.Find.Api.Querying.OrderByExtensions",
+        "containingType": "EPiServer.Find.TypeSearchExtensions",
         "methodName": "ThenBy",
         "minArguments": 1,
         "matchDerivedTypes": true
@@ -104,7 +104,7 @@
       "category": "query",
       "translatability": "exact",
       "findSymbolPattern": {
-        "containingType": "EPiServer.Find.Api.Querying.ITypeSearchExtensions",
+        "containingType": "EPiServer.Find.SearchExtensions",
         "methodName": "Skip",
         "minArguments": 1,
         "matchDerivedTypes": true
@@ -122,7 +122,7 @@
       "category": "query",
       "translatability": "exact",
       "findSymbolPattern": {
-        "containingType": "EPiServer.Find.Api.Querying.ITypeSearchExtensions",
+        "containingType": "EPiServer.Find.SearchExtensions",
         "methodName": "Take",
         "minArguments": 1,
         "matchDerivedTypes": true
@@ -140,7 +140,7 @@
       "category": "projection",
       "translatability": "caveat",
       "findSymbolPattern": {
-        "containingType": "EPiServer.Find.Api.Querying.SelectExtensions",
+        "containingType": "EPiServer.Find.TypeSearchExtensions",
         "methodName": "Select",
         "minArguments": 1,
         "matchDerivedTypes": true
@@ -161,7 +161,7 @@
       "category": "statistics",
       "translatability": "blocked",
       "findSymbolPattern": {
-        "containingType": "EPiServer.Find.ClientExtensions",
+        "containingType": "EPiServer.Find.Framework.Statistics.TrackableSearchExtensions",
         "methodName": "Track",
         "minArguments": 0,
         "matchDerivedTypes": true
@@ -182,7 +182,7 @@
       "category": "query",
       "translatability": "caveat",
       "findSymbolPattern": {
-        "containingType": "EPiServer.Find.Api.Querying.CacheExtensions",
+        "containingType": "EPiServer.Find.SearchExtensions",
         "methodName": "StaticallyCacheFor",
         "minArguments": 1,
         "matchDerivedTypes": true
@@ -202,7 +202,7 @@
       "category": "filtering",
       "translatability": "caveat",
       "findSymbolPattern": {
-        "containingType": "EPiServer.Find.Cms.SearchExtensions",
+        "containingType": "EPiServer.Find.Cms.ContentSearchExtensions",
         "methodName": "FilterForVisitor",
         "minArguments": 0,
         "matchDerivedTypes": true
@@ -222,7 +222,7 @@
       "category": "query",
       "translatability": "exact",
       "findSymbolPattern": {
-        "containingType": "EPiServer.Find.Cms.SearchContentExtensions",
+        "containingType": "EPiServer.Find.Cms.SearchRequestExtensions",
         "methodName": "GetContentResult",
         "minArguments": 0,
         "matchDerivedTypes": true
@@ -361,7 +361,7 @@
       "category": "query",
       "translatability": "blocked",
       "findSymbolPattern": {
-        "containingType": "EPiServer.Find.Api.Querying.SuggestExtensions",
+        "containingType": "EPiServer.Find.Framework.Statistics.StatisticsClientExtensions",
         "methodName": "DidYouMean",
         "minArguments": 1,
         "matchDerivedTypes": true
@@ -382,7 +382,7 @@
       "category": "query",
       "translatability": "blocked",
       "findSymbolPattern": {
-        "containingType": "EPiServer.Find.Api.Querying.SuggestExtensions",
+        "containingType": "EPiServer.Find.Framework.Statistics.StatisticsClientExtensions",
         "methodName": "Autocomplete",
         "minArguments": 1,
         "matchDerivedTypes": true
@@ -424,7 +424,7 @@
       "category": "query",
       "translatability": "exact",
       "findSymbolPattern": {
-        "containingType": "EPiServer.Find.Cms.SearchContentExtensions",
+        "containingType": "EPiServer.Find.Cms.SearchRequestExtensions",
         "methodName": "GetContentResultAsync",
         "minArguments": 0,
         "matchDerivedTypes": true
@@ -672,7 +672,7 @@
       "category": "projection",
       "translatability": "caveat",
       "findSymbolPattern": {
-        "containingType": "EPiServer.Find.Api.Querying.FacetExtensions",
+        "containingType": "EPiServer.Find.TypeSearchExtensions",
         "methodName": "TermsFacetFor",
         "minArguments": 1,
         "matchDerivedTypes": true

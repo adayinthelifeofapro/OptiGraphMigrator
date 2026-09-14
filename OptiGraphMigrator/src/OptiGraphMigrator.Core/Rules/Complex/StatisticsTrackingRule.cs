@@ -38,12 +38,6 @@ namespace OptiGraphMigrator.Core.Rules.Complex
         {
             var method = context.Segment.Method;
 
-            if (context.Symbols.StatisticsType is not null &&
-                context.Symbols.IsAssignableTo(context.Segment.ReceiverType, context.Symbols.StatisticsType))
-            {
-                return true;
-            }
-
             return context.Symbols.IsDeclaredInFindNamespace(method.ContainingType) &&
                    StatisticsMethodNames.Contains(method.Name);
         }
