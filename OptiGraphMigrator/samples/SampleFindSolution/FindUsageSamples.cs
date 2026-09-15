@@ -3,7 +3,9 @@ using System.Linq;
 using EPiServer;
 using EPiServer.Find;
 using EPiServer.Find.Api.Querying;
+using EPiServer.Find.ClientConventions;
 using EPiServer.Find.Cms;
+using EPiServer.Find.Framework.Statistics;
 
 namespace SampleFindSolution
 {
@@ -37,7 +39,7 @@ namespace SampleFindSolution
         public void FilterOrderSkipTake()
         {
             var results = _client.Search<Article>()
-                .Filter(a => IFilterBuilder.MatchAll())
+                .Filter(a => a.Title.Match("graph"))
                 .OrderBy(a => a.PublishDate)
                 .Skip(10)
                 .Take(20)
@@ -72,8 +74,9 @@ namespace SampleFindSolution
         // OGM009: Track() analytics call has no Graph equivalent (blocked).
         public void TrackSearch()
         {
-            var results = _client.Search<Article>().GetContentResult();
-            _client.Track("optimizely graph", results);
+            var results = _client.Search<Article>()
+                .Track()
+                .GetContentResult();
         }
 
         // OGM010: StaticallyCacheFor() caching has no built-in Graph equivalent.
@@ -92,11 +95,15 @@ namespace SampleFindSolution
                 .GetContentResult();
         }
 
-        // OGM101: Composed IFilterBuilder expressions (And/Or/Not).
+        // OGM101: Composed FilterBuilder<T> expressions (And/Or).
         public void ComposedFilters()
         {
+            var filter = _client.BuildFilter<Article>()
+                .Or(a => a.Title.Match("graph"))
+                .And(a => a.Body.Exists());
+
             var results = _client.Search<Article>()
-                .Filter(a => IFilterBuilder.MatchAll().And(IFilterBuilder.MatchNone()).Not())
+                .Filter(filter)
                 .GetContentResult();
         }
 
@@ -156,7 +163,7 @@ namespace SampleFindSolution
         {
             var articleType = typeof(Article);
             var results = _client.Search<Article>()
-                .Filter(a => IFilterBuilder.MatchAll())
+                .Filter(a => a.Title.Match("graph"))
                 .GetContentResult();
         }
 
@@ -255,7 +262,7 @@ namespace SampleFindSolution
         public void FieldOperatorFilters()
         {
             var results = _client.Search<Article>()
-                .Filter(a => EPiServer.Find.Api.Querying.FieldFilterExtensions.StartsWith(a.Title, "optimizely"))
+                .Filter(a => a.Title.Prefix("optimizely"))
                 .GetContentResult();
         }
 

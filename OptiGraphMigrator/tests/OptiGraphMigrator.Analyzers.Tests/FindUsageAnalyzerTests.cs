@@ -13,13 +13,12 @@ namespace OptiGraphMigrator.Analyzers.Tests
         {
             const string source = """
                 using EPiServer.Find;
-                using EPiServer.Find.Api.Querying;
 
                 public class Sample
                 {
                     public void Run(IClient client)
                     {
-                        var results = {|#0:client.Search<object>().Filter(x => IFilterBuilder.MatchAll())|}.GetResult();
+                        var results = {|#0:client.Search<object>().Filter(x => x.Match("a"))|}.GetResult();
                     }
                 }
                 """;
@@ -36,7 +35,6 @@ namespace OptiGraphMigrator.Analyzers.Tests
         {
             const string source = """
                 using EPiServer.Find;
-                using EPiServer.Find.Api.Querying;
 
                 public class Sample
                 {
@@ -59,7 +57,6 @@ namespace OptiGraphMigrator.Analyzers.Tests
         {
             const string source = """
                 using EPiServer.Find;
-                using EPiServer.Find.Api.Querying;
 
                 public class Sample
                 {
@@ -82,7 +79,6 @@ namespace OptiGraphMigrator.Analyzers.Tests
         {
             const string source = """
                 using EPiServer.Find;
-                using EPiServer.Find.Api.Querying;
 
                 public class Sample
                 {
@@ -105,7 +101,6 @@ namespace OptiGraphMigrator.Analyzers.Tests
         {
             const string source = """
                 using EPiServer.Find;
-                using EPiServer.Find.Api.Querying;
 
                 public class Sample
                 {
@@ -128,26 +123,24 @@ namespace OptiGraphMigrator.Analyzers.Tests
         {
             const string source = """
                 using EPiServer.Find;
-                using EPiServer.Find.Api.Querying;
 
                 public class Sample
                 {
                     public void Run(IClient client)
                     {
-                        var results = {|#0:client.Search<object>().Filter(x => IFilterBuilder.MatchAll())|}.GetResult();
+                        var results = {|#0:client.Search<object>().Filter(x => x.Match("a"))|}.GetResult();
                     }
                 }
                 """;
 
             const string fixedSource = """
                 using EPiServer.Find;
-                using EPiServer.Find.Api.Querying;
 
                 public class Sample
                 {
                     public void Run(IClient client)
                     {
-                        var results = client.Search<object>().Where(x => IFilterBuilder.MatchAll()).GetResult();
+                        var results = client.Search<object>().Where(x => x.Match("a")).GetResult();
                     }
                 }
                 """;
@@ -167,7 +160,6 @@ namespace OptiGraphMigrator.Analyzers.Tests
         {
             const string source = """
                 using EPiServer.Find;
-                using EPiServer.Find.Api.Querying;
 
                 public class Sample
                 {
@@ -197,7 +189,6 @@ namespace OptiGraphMigrator.Analyzers.Tests
         {
             const string source = """
                 using EPiServer.Find;
-                using EPiServer.Find.Api.Querying;
 
                 public class Sample
                 {
@@ -220,6 +211,43 @@ namespace OptiGraphMigrator.Analyzers.Tests
             var expected = new DiagnosticResult("OGM003", Microsoft.CodeAnalysis.DiagnosticSeverity.Warning)
                 .WithLocation(0)
                 .WithArguments("OrderBy");
+
+            await FindTestHelper.VerifyAnalyzerAsync<FindUsageAnalyzer>(source, expected);
+        }
+
+        [Fact]
+        public async Task ChainReassignedAcrossSeveralStatements_ResolvesAsSingleChain_NoUnresolvedDiagnostic()
+        {
+            const string source = """
+                using EPiServer.Find;
+
+                public class Sample
+                {
+                    public void Run(IClient client, bool applyText)
+                    {
+                        var query = client.Search<object>();
+
+                        if (applyText)
+                        {
+                            query = {|#0:query.For("hello")|};
+                        }
+
+                        query = {|#1:query.OrderBy(x => x)|};
+                        query = {|#2:query.Skip(10)|};
+                        query = {|#3:query.Take(20)|};
+
+                        var results = query.GetResult();
+                    }
+                }
+                """;
+
+            var expected = new[]
+            {
+                new DiagnosticResult("OGM002", Microsoft.CodeAnalysis.DiagnosticSeverity.Warning).WithLocation(0).WithArguments("For"),
+                new DiagnosticResult("OGM003", Microsoft.CodeAnalysis.DiagnosticSeverity.Warning).WithLocation(1).WithArguments("OrderBy"),
+                new DiagnosticResult("OGM006", Microsoft.CodeAnalysis.DiagnosticSeverity.Info).WithLocation(2).WithArguments("Skip"),
+                new DiagnosticResult("OGM007", Microsoft.CodeAnalysis.DiagnosticSeverity.Info).WithLocation(3).WithArguments("Take"),
+            };
 
             await FindTestHelper.VerifyAnalyzerAsync<FindUsageAnalyzer>(source, expected);
         }

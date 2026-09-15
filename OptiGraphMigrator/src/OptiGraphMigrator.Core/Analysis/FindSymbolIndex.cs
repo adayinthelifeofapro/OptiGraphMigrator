@@ -17,11 +17,9 @@ namespace OptiGraphMigrator.Core.Analysis
 
         private static readonly string[] SearchTypeNames =
         {
-            "EPiServer.Find.Api.Querying.ITypeSearch`1",
-            "EPiServer.Find.Api.Querying.ISearch",
-            "EPiServer.Find.Api.Querying.ISearch`1",
-            "EPiServer.Find.Api.Querying.IUnifiedSearch",
-            "EPiServer.Find.Cms.IContentSearch`1",
+            "EPiServer.Find.ITypeSearch`1",
+            "EPiServer.Find.ISearch",
+            "EPiServer.Find.ISearch`1",
         };
 
         private static readonly string[] QueryRootMethodNames =
@@ -52,7 +50,6 @@ namespace OptiGraphMigrator.Core.Analysis
             INamedTypeSymbol? filterBuilderType,
             INamedTypeSymbol? unifiedSearchRegistryType,
             INamedTypeSymbol? clientConventionsType,
-            INamedTypeSymbol? statisticsType,
             INamedTypeSymbol? contentLoaderType,
             ImmutableArray<INamedTypeSymbol> findRootTypes)
         {
@@ -62,7 +59,6 @@ namespace OptiGraphMigrator.Core.Analysis
             FilterBuilderType = filterBuilderType;
             UnifiedSearchRegistryType = unifiedSearchRegistryType;
             ClientConventionsType = clientConventionsType;
-            StatisticsType = statisticsType;
             ContentLoaderType = contentLoaderType;
             _findRootTypes = findRootTypes;
         }
@@ -73,17 +69,14 @@ namespace OptiGraphMigrator.Core.Analysis
         /// <summary><c>EPiServer.Find.IClient</c>, when referenced.</summary>
         public INamedTypeSymbol? ClientType { get; }
 
-        /// <summary><c>EPiServer.Find.Api.Querying.IFilterBuilder</c>, when referenced.</summary>
+        /// <summary><c>EPiServer.Find.FilterBuilder`1</c>, when referenced.</summary>
         public INamedTypeSymbol? FilterBuilderType { get; }
 
         /// <summary>The UnifiedSearch registry type, when referenced.</summary>
         public INamedTypeSymbol? UnifiedSearchRegistryType { get; }
 
-        /// <summary>Indexing conventions type, when referenced.</summary>
+        /// <summary><c>EPiServer.Find.IClientConventions</c>, when referenced.</summary>
         public INamedTypeSymbol? ClientConventionsType { get; }
-
-        /// <summary>Statistics / tracking entry point, when referenced.</summary>
-        public INamedTypeSymbol? StatisticsType { get; }
 
         /// <summary><c>EPiServer.IContentLoader</c>, when referenced.</summary>
         public INamedTypeSymbol? ContentLoaderType { get; }
@@ -126,10 +119,9 @@ namespace OptiGraphMigrator.Core.Analysis
                 compilation,
                 clientType,
                 searchTypes.ToImmutable(),
-                compilation.GetTypeByMetadataName("EPiServer.Find.Api.Querying.IFilterBuilder"),
+                compilation.GetTypeByMetadataName("EPiServer.Find.FilterBuilder`1"),
                 compilation.GetTypeByMetadataName("EPiServer.Find.UnifiedSearch.UnifiedSearchRegistry"),
-                compilation.GetTypeByMetadataName("EPiServer.Find.ClientConventions"),
-                compilation.GetTypeByMetadataName("EPiServer.Find.Statistics.IStatisticTracker"),
+                compilation.GetTypeByMetadataName("EPiServer.Find.IClientConventions"),
                 compilation.GetTypeByMetadataName("EPiServer.IContentLoader"),
                 roots.ToImmutable());
         }

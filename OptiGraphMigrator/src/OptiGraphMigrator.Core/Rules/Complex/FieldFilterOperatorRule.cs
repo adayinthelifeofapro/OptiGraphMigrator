@@ -8,7 +8,7 @@ namespace OptiGraphMigrator.Core.Rules.Complex
 {
     /// <summary>
     /// Flags <c>Filter(...)</c> predicates whose lambda body uses field-level operators
-    /// (<c>StartsWith</c>, <c>GreaterThan</c>, <c>LessThan</c>, <c>Exists</c>) that translate to
+    /// (<c>Prefix</c>, <c>GreaterThan</c>, <c>LessThan</c>, <c>Exists</c>) that translate to
     /// Graph 'where' comparisons with subtly different semantics (case sensitivity, null
     /// handling, inclusive/exclusive bounds).
     /// </summary>
@@ -21,12 +21,12 @@ namespace OptiGraphMigrator.Core.Rules.Complex
     {
         private static readonly Dictionary<string, string> OperatorCaveats = new Dictionary<string, string>(StringComparer.Ordinal)
         {
-            ["StartsWith"] = "Find's StartsWith() prefix match may use different case-sensitivity/analysis rules than Graph's 'where' string prefix comparison; verify the field's Graph analyzer configuration produces equivalent results.",
+            ["Prefix"] = "Find's Prefix() prefix match may use different case-sensitivity/analysis rules than Graph's 'where' string prefix comparison; verify the field's Graph analyzer configuration produces equivalent results.",
             ["GreaterThan"] = "Confirm whether Find's GreaterThan() is inclusive or exclusive for the field's data type and match it against the correct Graph 'where' comparison operator (gt vs gte).",
             ["LessThan"] = "Confirm whether Find's LessThan() is inclusive or exclusive for the field's data type and match it against the correct Graph 'where' comparison operator (lt vs lte).",
             ["Exists"] = "Find's Exists() treats missing and null field values the same way; verify the equivalent Graph 'where' null-check clause matches this behavior for the target field.",
             ["In"] = "Find's In() matches against a set of values; confirm the equivalent Graph 'where' 'in' comparison uses the same equality semantics (e.g. case sensitivity) as the Find field operator.",
-            ["Between"] = "Confirm whether Find's Between() bounds are inclusive or exclusive for the field's data type and match them against the correct Graph 'where' range operators (gte/lte vs gt/lt).",
+            ["InRange"] = "Confirm whether Find's InRange() bounds are inclusive or exclusive for the field's data type and match them against the correct Graph 'where' range operators (gte/lte vs gt/lt).",
         };
 
         /// <inheritdoc />
@@ -109,8 +109,7 @@ namespace OptiGraphMigrator.Core.Rules.Complex
                 }
 
                 var symbol = semanticModel.GetSymbolInfo(invocation).Symbol as IMethodSymbol;
-                if (symbol?.ContainingType?.Name == "FieldFilterExtensions" ||
-                    symbol?.ContainingNamespace?.ToDisplayString()?.StartsWith("EPiServer.Find", StringComparison.Ordinal) == true)
+                if (symbol?.ContainingNamespace?.ToDisplayString()?.StartsWith("EPiServer.Find", StringComparison.Ordinal) == true)
                 {
                     return name;
                 }

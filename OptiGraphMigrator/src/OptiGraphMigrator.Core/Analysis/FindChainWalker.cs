@@ -35,7 +35,6 @@ namespace OptiGraphMigrator.Core.Analysis
 
             var reversed = new List<FindChainSegment>();
             var current = outermost;
-            var visitedVariables = new HashSet<ISymbol>(SymbolEqualityComparer.Default);
 
             while (current is not null)
             {
@@ -56,7 +55,7 @@ namespace OptiGraphMigrator.Core.Analysis
                 var receiverInvocation = GetReceiverInvocation(current);
                 if (receiverInvocation is null)
                 {
-                    receiverInvocation = TryFollowVariableReassignment(current, semanticModel, visitedVariables, cancellationToken);
+                    receiverInvocation = TryFollowVariableReassignment(current, semanticModel, cancellationToken);
                 }
 
                 current = receiverInvocation;
@@ -90,13 +89,13 @@ namespace OptiGraphMigrator.Core.Analysis
         /// When <paramref name="invocation"/>'s receiver is a plain local variable (or
         /// parameter) rather than another invocation, looks for the nearest preceding
         /// assignment or declaration of that variable and, if its initializer is itself a Find
-        /// invocation, continues climbing from there. Guards against infinite loops by tracking
-        /// variables already followed.
+        /// invocation, continues climbing from there. The same variable may be followed any
+        /// number of times (<c>query = query.A(); query = query.B();</c>); each hop only looks at
+        /// assignments strictly before the current position, so the walk always terminates.
         /// </summary>
         private static InvocationExpressionSyntax? TryFollowVariableReassignment(
             InvocationExpressionSyntax invocation,
             SemanticModel semanticModel,
-            HashSet<ISymbol> visitedVariables,
             CancellationToken cancellationToken)
         {
             if (invocation.Expression is not MemberAccessExpressionSyntax memberAccess ||
@@ -106,7 +105,7 @@ namespace OptiGraphMigrator.Core.Analysis
             }
 
             var variableSymbol = semanticModel.GetSymbolInfo(identifier, cancellationToken).Symbol;
-            if (variableSymbol is null || !visitedVariables.Add(variableSymbol))
+            if (variableSymbol is null)
             {
                 return null;
             }
