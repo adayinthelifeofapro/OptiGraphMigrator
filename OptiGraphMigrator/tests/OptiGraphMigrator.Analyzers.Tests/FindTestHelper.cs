@@ -66,6 +66,32 @@ namespace OptiGraphMigrator.Analyzers.Tests
             return diagnostics;
         }
 
+        /// <summary>
+        /// Builds a compilation that has a <c>using EPiServer.Find;</c> directive but no
+        /// EPiServer.Find metadata reference at all, mirroring a legacy CMS 11 project whose
+        /// packages.config references were never restored. Used to exercise the analyzers'
+        /// syntactic-only heuristic fallback path.
+        /// </summary>
+        public static async Task<IReadOnlyList<Diagnostic>> GetAnalyzerDiagnosticsWithoutFindReferenceAsync<TAnalyzer>(string source)
+            where TAnalyzer : DiagnosticAnalyzer, new()
+        {
+            var references = new List<MetadataReference>();
+            var resolvedAssemblies = await ReferenceAssemblies.ResolveAsync(LanguageNames.CSharp, System.Threading.CancellationToken.None);
+            references.AddRange(resolvedAssemblies);
+
+            var syntaxTree = CSharpSyntaxTree.ParseText(source);
+            var compilation = CSharpCompilation.Create(
+                "AnalyzerTestAssemblyNoFindRef",
+                new[] { syntaxTree },
+                references,
+                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+            var analyzer = new TAnalyzer();
+            var withAnalyzers = compilation.WithAnalyzers(ImmutableArray.Create<DiagnosticAnalyzer>(analyzer));
+
+            return await withAnalyzers.GetAnalyzerDiagnosticsAsync();
+        }
+
         private static async Task<Compilation> BuildCompilationAsync(string source)
         {
             var references = new List<MetadataReference>();

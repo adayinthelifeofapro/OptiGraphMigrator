@@ -8,6 +8,8 @@ namespace OptiGraphMigrator.Reporting
         /// <inheritdoc />
         public void Write(MigrationReport report, TextWriter writer)
         {
+            WriteHeader(report, writer);
+
             if (report.Findings.Count == 0)
             {
                 writer.WriteLine("No Search & Navigation (Find) usage detected. Nothing to migrate.");
@@ -31,6 +33,26 @@ namespace OptiGraphMigrator.Reporting
 
             writer.WriteLine();
             writer.WriteLine($"Summary: {report.ErrorCount} error(s), {report.WarningCount} warning(s), {report.InfoCount} info");
+        }
+
+        private static void WriteHeader(MigrationReport report, TextWriter writer)
+        {
+            if (string.IsNullOrEmpty(report.DetectedCmsVersion) && !report.IsHeuristic)
+            {
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(report.DetectedCmsVersion))
+            {
+                writer.WriteLine($"Detected Optimizely CMS version: {report.DetectedCmsVersion}");
+            }
+
+            if (report.IsHeuristic)
+            {
+                writer.WriteLine("WARNING: one or more projects could not be resolved by MSBuild; results are heuristic (name-based matching) and may include false positives.");
+            }
+
+            writer.WriteLine();
         }
     }
 }

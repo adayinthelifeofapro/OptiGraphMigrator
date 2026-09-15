@@ -11,6 +11,19 @@ namespace OptiGraphMigrator.Reporting
         {
             writer.WriteLine($"# OptiGraphMigrator report");
             writer.WriteLine();
+
+            if (!string.IsNullOrEmpty(report.DetectedCmsVersion))
+            {
+                writer.WriteLine($"**Detected Optimizely CMS version:** {report.DetectedCmsVersion}");
+                writer.WriteLine();
+            }
+
+            if (report.IsHeuristic)
+            {
+                writer.WriteLine("> **Warning:** one or more projects could not be resolved by MSBuild; results are heuristic (name-based matching) and may include false positives.");
+                writer.WriteLine();
+            }
+
             writer.WriteLine($"{report.ErrorCount} error(s), {report.WarningCount} warning(s), {report.InfoCount} info");
             writer.WriteLine();
             writer.WriteLine($"- Exact (auto-fixable): {report.ExactCount}");

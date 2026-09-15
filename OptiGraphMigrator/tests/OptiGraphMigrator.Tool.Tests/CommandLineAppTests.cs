@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -168,6 +169,27 @@ namespace OptiGraphMigrator.Tool.Tests
             // The sample solution does not produce any error-severity findings, only
             // warning/info, so filtering to "error" should yield an empty findings array.
             Assert.Contains("[]", json);
+        }
+
+        [Fact]
+        public async Task Scan_LegacyCms11SampleSolution_ProducesFindingsWithoutThrowing()
+        {
+            var output = new StringWriter();
+            var error = new StringWriter();
+
+            var exitCode = await CommandLineApp.RunAsync(
+                new[] { "scan", SamplePaths.SampleCms11SolutionCsproj, "--format", "console" },
+                output,
+                error);
+
+            // The legacy project's packages.config references are never restored on disk, so
+            // MSBuild cannot resolve any Find symbols; the scan falls back to the source-only
+            // heuristic loader, reports the detected CMS 11 version, warns that results are
+            // heuristic, and still finds Find usage by name (OGM902).
+            Assert.True(exitCode == 0 || exitCode == 1);
+            var consoleOutput = output.ToString();
+            Assert.Contains("Detected Optimizely CMS version: 11", consoleOutput, StringComparison.Ordinal);
+            Assert.Contains("OGM902", consoleOutput, StringComparison.Ordinal);
         }
     }
 }

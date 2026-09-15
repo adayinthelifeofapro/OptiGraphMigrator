@@ -99,5 +99,24 @@ namespace OptiGraphMigrator.Tool.Tests
                 return Path.Combine(directory.FullName, "samples", "SampleFindSolution", "SampleFindSolution.csproj");
             }
         }
+
+        public static string SampleCms11SolutionCsproj
+        {
+            get
+            {
+                var directory = new DirectoryInfo(AppContext.BaseDirectory);
+                while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "OptiGraphMigrator.slnx")))
+                {
+                    directory = directory.Parent;
+                }
+
+                if (directory is null)
+                {
+                    throw new InvalidOperationException("Could not locate OptiGraphMigrator.slnx from test base directory.");
+                }
+
+                return Path.Combine(directory.FullName, "samples", "SampleFindSolutionCms11", "SampleFindSolutionCms11.csproj");
+            }
+        }
     }
 }

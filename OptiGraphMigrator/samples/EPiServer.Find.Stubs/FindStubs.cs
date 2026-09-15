@@ -201,6 +201,16 @@ namespace EPiServer.Find.Cms
     public static class ContentSearchExtensions
     {
         public static ITypeSearch<T> FilterForVisitor<T>(this ITypeSearch<T> search) => search;
+
+        public static ITypeSearch<T> FilterOnCurrentSite<T>(this ITypeSearch<T> search) => search;
+
+        public static ITypeSearch<T> FilterOnLanguages<T>(this ITypeSearch<T> search, params string[] languages) => search;
+
+        public static ITypeSearch<T> PublishedInLanguage<T>(this ITypeSearch<T> search, string language = null) => search;
+
+        public static ITypeSearch<T> ExcludeDeleted<T>(this ITypeSearch<T> search) => search;
+
+        public static IEnumerable<object> GetPagesResult<T>(this ITypeSearch<T> search) => Array.Empty<object>();
     }
 
     public static class SearchRequestExtensions

@@ -45,6 +45,16 @@ namespace OptiGraphMigrator.Reporting
             writer.WriteLine("<body>");
             writer.WriteLine("<h1>OptiGraphMigrator report</h1>");
 
+            if (!string.IsNullOrEmpty(report.DetectedCmsVersion))
+            {
+                writer.WriteLine($"<p>Detected Optimizely CMS version: <strong>{WebUtility.HtmlEncode(report.DetectedCmsVersion)}</strong></p>");
+            }
+
+            if (report.IsHeuristic)
+            {
+                writer.WriteLine("<p class=\"no-equivalent-text\"><strong>Warning:</strong> one or more projects could not be resolved by MSBuild; results are heuristic (name-based matching) and may include false positives.</p>");
+            }
+
             var mappedCount = report.ExactCount + report.CaveatCount;
             var totalCalls = report.Findings.Count;
             var noEquivalentCount = report.BlockedCount;
