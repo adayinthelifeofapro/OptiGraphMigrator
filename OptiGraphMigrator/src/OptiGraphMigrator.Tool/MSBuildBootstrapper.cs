@@ -33,6 +33,26 @@ namespace OptiGraphMigrator.Tool
     /// <see cref="MSBuildLocator"/> APIs. It must never reference
     /// <c>Microsoft.CodeAnalysis.MSBuild</c> or any other MSBuild-dependent type, since those
     /// cannot be loaded until an MSBuild instance has been registered.
+    ///
+    /// <para>
+    /// <see cref="MSBuildLocator.QueryVisualStudioInstances()"/> can only discover full Visual
+    /// Studio installations when the .NET Framework (net46) build of Microsoft.Build.Locator is
+    /// loaded, because the COM-based VS Setup discovery code is compiled out of the .NET (Core)
+    /// build (guarded by the <c>FEATURE_VISUALSTUDIOSETUP</c> constant, which is only defined for
+    /// the net46 target). Since this tool runs on .NET, that API can only ever return .NET SDK
+    /// instances - even when Visual Studio is installed.
+    /// </para>
+    /// <para>
+    /// A full Visual Studio/Build Tools MSBuild toolset also cannot be loaded in-process here even
+    /// via a manual path (e.g. discovered through <c>vswhere.exe</c> and registered with
+    /// <see cref="MSBuildLocator.RegisterMSBuildPath(string)"/>): that toolset only ships
+    /// .NET Framework (net46) MSBuild assemblies, which are not binary-compatible with this
+    /// .NET 10 process and fail with assembly version/manifest mismatches at runtime (e.g.
+    /// <c>Microsoft.Bcl.AsyncInterfaces</c>). Therefore, for legacy/CMS 11 style solutions, this
+    /// bootstrapper always falls back to the .NET SDK MSBuild and relies on
+    /// <c>ScanEngine</c>'s source-only heuristic scan when the SDK MSBuild cannot evaluate the
+    /// legacy project files.
+    /// </para>
     /// </remarks>
     public static class MSBuildBootstrapper
     {
@@ -50,19 +70,8 @@ namespace OptiGraphMigrator.Tool
 
             if (inspection.HasLegacyProject || inspection.HasPackagesConfig)
             {
-                var instance = MSBuildLocator.QueryVisualStudioInstances()
-                    .Where(i => i.DiscoveryType == DiscoveryType.VisualStudioSetup || i.DiscoveryType == DiscoveryType.DeveloperConsole)
-                    .OrderByDescending(i => i.Version)
-                    .FirstOrDefault();
-
-                if (instance is not null)
-                {
-                    MSBuildLocator.RegisterInstance(instance);
-                    return new MSBuildBootstrapResult(true, $"{instance.Name} {instance.Version}");
-                }
-
                 errorWriter.WriteLine(
-                    "warning: this looks like a legacy (non-SDK) Optimizely CMS 11 project, but no Visual Studio/Build Tools MSBuild instance was found. Falling back to the .NET SDK MSBuild, which may fail to load the project; a source-only heuristic scan will be attempted if it does.");
+                    "warning: this looks like a legacy (non-SDK) Optimizely CMS 11 project. A full Visual Studio/Build Tools MSBuild instance cannot be used from this .NET tool, so the .NET SDK MSBuild will be used, which may fail to load the project; a source-only heuristic scan will be attempted if it does.");
             }
 
             MSBuildLocator.RegisterDefaults();
