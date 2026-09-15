@@ -38,8 +38,22 @@ namespace OptiGraphMigrator.Tool
 
             var projects = await LoadProjectsAsync(workspace, options.Path).ConfigureAwait(false);
 
+            var usedSourceOnlyFallback = false;
+            if (!projects.Any(p => p.Language == LanguageNames.CSharp))
+            {
+                var fallbackProjects = SourceOnlyProjectLoader.Load(options.Path);
+                if (fallbackProjects.Count > 0)
+                {
+                    errorWriter.WriteLine(
+                        "warning: MSBuild could not load any C# project from the scan target; falling back to a source-only heuristic scan. EPiServer.Find references could not be resolved, so results are name-based and may include false positives.");
+                    projects = fallbackProjects;
+                    usedSourceOnlyFallback = true;
+                }
+            }
+
             var findings = new List<MigrationFinding>();
             var solutionRoot = Path.GetDirectoryName(Path.GetFullPath(options.Path)) ?? string.Empty;
+            var isHeuristic = usedSourceOnlyFallback;
 
             foreach (var project in projects)
             {
@@ -59,6 +73,12 @@ namespace OptiGraphMigrator.Tool
 
                 foreach (var diagnostic in diagnostics)
                 {
+                    if (diagnostic.Properties.TryGetValue("Confidence", out var confidence) &&
+                        string.Equals(confidence, "Heuristic", StringComparison.Ordinal))
+                    {
+                        isHeuristic = true;
+                    }
+
                     var finding = ToFinding(diagnostic, solutionRoot);
                     if (finding is not null && SeverityLevel.Meets(finding.Severity, options.SeverityThreshold))
                     {
@@ -67,12 +87,25 @@ namespace OptiGraphMigrator.Tool
                 }
             }
 
-            return new MigrationReport(findings
-                .GroupBy(f => (f.FilePath, f.StartLine, f.RuleId, f.Message), FindingKeyComparer.Instance)
-                .Select(g => g.First())
-                .OrderBy(f => f.FilePath, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(f => f.StartLine)
-                .ToList());
+            foreach (var webConfigFinding in WebConfigScanner.Scan(solutionRoot))
+            {
+                if (SeverityLevel.Meets(webConfigFinding.Severity, options.SeverityThreshold))
+                {
+                    findings.Add(webConfigFinding);
+                }
+            }
+
+            var detectedCmsVersion = ProjectFileInspector.Inspect(options.Path).DetectedCmsVersion;
+
+            return new MigrationReport(
+                findings
+                    .GroupBy(f => (f.FilePath, f.StartLine, f.RuleId, f.Message), FindingKeyComparer.Instance)
+                    .Select(g => g.First())
+                    .OrderBy(f => f.FilePath, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(f => f.StartLine)
+                    .ToList(),
+                isHeuristic,
+                detectedCmsVersion);
         }
 
         /// <summary>

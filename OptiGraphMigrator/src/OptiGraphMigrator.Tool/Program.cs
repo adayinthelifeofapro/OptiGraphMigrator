@@ -14,10 +14,13 @@ namespace OptiGraphMigrator.Tool
         private static async Task<int> Main(string[] args)
         {
             // Must run before any Microsoft.CodeAnalysis.Workspaces.MSBuild (or MSBuild)
-            // type is touched, directly or transitively.
+            // type is touched, directly or transitively. Inspects the scan target (plain
+            // XML/text only) to decide between the default .NET SDK MSBuild and a full
+            // Visual Studio/Build Tools instance capable of loading legacy (CMS 11 style)
+            // non-SDK projects.
             if (!MSBuildLocator.IsRegistered)
             {
-                MSBuildLocator.RegisterDefaults();
+                MSBuildBootstrapper.RegisterFor(args, Console.Error);
             }
 
             return await CommandLineApp.RunAsync(args, Console.Out, Console.Error).ConfigureAwait(false);

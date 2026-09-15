@@ -9,6 +9,26 @@ namespace OptiGraphMigrator.Analyzers.Tests
     public class FindUsageAnalyzerTests
     {
         [Fact]
+        public async Task Search_WithoutFindReference_ReportsHeuristicOgm902()
+        {
+            const string source = """
+                using EPiServer.Find;
+
+                public class Sample
+                {
+                    public void Run(IClient client)
+                    {
+                        var results = client.Search<object>().Filter(x => x.Match("a")).GetResult();
+                    }
+                }
+                """;
+
+            var diagnostics = await FindTestHelper.GetAnalyzerDiagnosticsWithoutFindReferenceAsync<FindUsageAnalyzer>(source);
+
+            Assert.Contains(diagnostics, d => d.Id == "OGM902");
+        }
+
+        [Fact]
         public async Task Filter_ReportsOgm001AndOffersCodeFix()
         {
             const string source = """

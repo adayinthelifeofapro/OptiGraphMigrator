@@ -92,13 +92,31 @@ namespace OptiGraphMigrator.Reporting
     public sealed class MigrationReport
     {
         /// <summary>Creates a report.</summary>
-        public MigrationReport(IReadOnlyList<MigrationFinding> findings)
+        public MigrationReport(
+            IReadOnlyList<MigrationFinding> findings,
+            bool isHeuristic = false,
+            string? detectedCmsVersion = null)
         {
             Findings = findings;
+            IsHeuristic = isHeuristic;
+            DetectedCmsVersion = detectedCmsVersion;
         }
 
         /// <summary>All findings in the order they were reported.</summary>
         public IReadOnlyList<MigrationFinding> Findings { get; }
+
+        /// <summary>
+        /// True when one or more scanned projects could not be fully resolved by MSBuild/Roslyn
+        /// and were analyzed heuristically (syntax/name matching only, without semantic symbol
+        /// resolution). Findings from such projects may include false positives.
+        /// </summary>
+        public bool IsHeuristic { get; }
+
+        /// <summary>
+        /// Best-effort detection of the Optimizely CMS generation the scanned solution targets
+        /// ("11", "12+"), or null when it could not be determined.
+        /// </summary>
+        public string? DetectedCmsVersion { get; }
 
         /// <summary>Number of findings at error severity.</summary>
         public int ErrorCount => Count("error");

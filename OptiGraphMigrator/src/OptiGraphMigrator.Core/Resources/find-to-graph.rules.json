@@ -684,6 +684,106 @@
       ],
       "messageFormat": "Find '{0}(...)' can be translated to a Graph facets selection, but requires manual review",
       "isAutoFixable": false
+    },
+    {
+      "id": "OGM035",
+      "title": "FilterOnCurrentSite() maps to Graph site-scoped where(...)",
+      "severity": "warning",
+      "category": "filtering",
+      "translatability": "caveat",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.Cms.ContentSearchExtensions",
+        "methodName": "FilterOnCurrentSite",
+        "minArguments": 0,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": ".Where(x => x.SiteId().Match(\"<current site id>\"))",
+      "graphQlSnippetTemplate": "where: {{ SiteId: {{ eq: \"{0}\" }} }}",
+      "caveats": [
+        "FilterOnCurrentSite() resolves the current site from EPiServer.Web.SiteDefinition.Current at query time. Graph has no ambient site context, so the current site id must be resolved explicitly (e.g. from the current request) and passed into an explicit 'where' clause."
+      ],
+      "messageFormat": "Find '{0}(...)' can be translated to an explicit Graph 'where' clause on site id, but requires manual review",
+      "isAutoFixable": false
+    },
+    {
+      "id": "OGM036",
+      "title": "FindPageData/FindContentData projection has no direct Graph equivalent",
+      "severity": "warning",
+      "category": "projection",
+      "translatability": "caveat",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.Cms.ContentSearchExtensions",
+        "methodName": "GetPagesResult",
+        "minArguments": 0,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": "query { <ContentType>(...) { items { ... } } }",
+      "graphQlSnippetTemplate": "{0} {{ items {{ ContentLink {{ Id }} Name }} }}",
+      "caveats": [
+        "Find's GetPagesResult()/FindPageData() materialise strongly-typed PageData instances re-hydrated from EPiServer's content repository. Graph returns a projection of indexed fields only; content that must be re-loaded via IContentLoader after the query, or the required fields must be added to the GraphQL selection set."
+      ],
+      "messageFormat": "Find '{0}(...)' has no direct Graph equivalent; the result must be re-hydrated or the required fields added to the query selection set",
+      "isAutoFixable": false
+    },
+    {
+      "id": "OGM037",
+      "title": "FilterOnLanguages(...) maps to Graph language where(...)",
+      "severity": "warning",
+      "category": "filtering",
+      "translatability": "exact",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.Cms.ContentSearchExtensions",
+        "methodName": "FilterOnLanguages",
+        "minArguments": 1,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": ".Where(x => x.Language().Match(\"<language branch>\"))",
+      "graphQlSnippetTemplate": "where: {{ Language: {{ eq: \"{0}\" }} }}",
+      "caveats": [
+        "FilterOnLanguages() restricts results to one or more content language branches; express the equivalent branch(es) as an explicit Graph 'where'/'in' clause on the language field."
+      ],
+      "messageFormat": "Find '{0}(...)' can be translated to a Graph 'where' clause on language",
+      "isAutoFixable": false
+    },
+    {
+      "id": "OGM038",
+      "title": "PublishedInLanguage(...) maps to Graph language where(...)",
+      "severity": "warning",
+      "category": "filtering",
+      "translatability": "exact",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.Cms.ContentSearchExtensions",
+        "methodName": "PublishedInLanguage",
+        "minArguments": 0,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": ".Where(x => x.Language().Match(\"<language branch>\") && x.Status().Match(\"Published\"))",
+      "graphQlSnippetTemplate": "where: {{ Language: {{ eq: \"{0}\" }}, Status: {{ eq: \"Published\" }} }}",
+      "caveats": [
+        "PublishedInLanguage() combines a language filter with the current publish/access-rights status. Re-express both dimensions as explicit Graph 'where' clauses against the indexed fields."
+      ],
+      "messageFormat": "Find '{0}(...)' can be translated to explicit Graph 'where' clauses on language and publish status",
+      "isAutoFixable": false
+    },
+    {
+      "id": "OGM039",
+      "title": "ExcludeDeleted() maps to Graph deletion-status where(...)",
+      "severity": "warning",
+      "category": "filtering",
+      "translatability": "exact",
+      "findSymbolPattern": {
+        "containingType": "EPiServer.Find.Cms.ContentSearchExtensions",
+        "methodName": "ExcludeDeleted",
+        "minArguments": 0,
+        "matchDerivedTypes": true
+      },
+      "graphEquivalent": ".Where(x => x.IsDeleted().Match(false))",
+      "graphQlSnippetTemplate": "where: {{ IsDeleted: {{ eq: false }} }}",
+      "caveats": [
+        "ExcludeDeleted() filters out soft-deleted content at query time; re-express as an explicit Graph 'where' clause on the deletion-status field, if the field is indexed."
+      ],
+      "messageFormat": "Find '{0}(...)' can be translated to a Graph 'where' clause excluding deleted content",
+      "isAutoFixable": false
     }
   ]
 }

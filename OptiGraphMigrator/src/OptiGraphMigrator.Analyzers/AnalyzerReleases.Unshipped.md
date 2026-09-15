@@ -52,3 +52,9 @@ OGM204 | OptiGraphMigrator.Filtering | Warning | In-memory Filter() predicate ha
 OGM205 | OptiGraphMigrator.Query | Warning | Reflection-driven query construction has no clean Graph translation
 OGM207 | OptiGraphMigrator.Filtering | Warning | Filter() field operator has subtly different Graph 'where' semantics
 OGM901 | OptiGraphMigrator.Infrastructure | Info | Find query chain could not be fully resolved
+OGM902 | OptiGraphMigrator.Heuristic | Info | Possible Find usage detected heuristically
+OGM035 | OptiGraphMigrator.Filtering | Warning | FilterOnCurrentSite() maps to Graph site-scoped where(...)
+OGM036 | OptiGraphMigrator.Projection | Warning | FindPageData/FindContentData projection has no direct Graph equivalent
+OGM037 | OptiGraphMigrator.Filtering | Warning | FilterOnLanguages(...) maps to Graph language where(...)
+OGM038 | OptiGraphMigrator.Filtering | Warning | PublishedInLanguage(...) maps to Graph language where(...)
+OGM039 | OptiGraphMigrator.Filtering | Warning | ExcludeDeleted() maps to Graph deletion-status where(...)

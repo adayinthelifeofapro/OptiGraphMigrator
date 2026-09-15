@@ -38,18 +38,67 @@ namespace OptiGraphMigrator.Analyzers
                     return;
                 }
 
-                var engine = new MigrationRuleEngine(RuleCatalogueLoader.Default);
-
                 // The chain walker follows shared variable reuse across statements, so the same
                 // underlying segment can be discovered - and would otherwise be re-reported - once
                 // per downstream chain that reuses it. Track (rule, location) pairs already
                 // reported for this compilation to collapse those duplicates.
                 var reported = new ConcurrentDictionary<(string RuleId, SyntaxTree? Tree, TextSpan Span), byte>();
 
+                if (symbols.IsSyntacticOnly)
+                {
+                    // Find metadata could not be resolved (e.g. a legacy CMS 11 project scanned
+                    // via the source-only fallback loader). Fall back to matching invocations by
+                    // name only, since no symbols are available to drive the full rule engine.
+                    compilationStartContext.RegisterSyntaxNodeAction(
+                        nodeContext => AnalyzeHeuristically(nodeContext, reported),
+                        SyntaxKind.InvocationExpression);
+                    return;
+                }
+
+                var engine = new MigrationRuleEngine(RuleCatalogueLoader.Default);
+
                 compilationStartContext.RegisterSyntaxNodeAction(
                     nodeContext => Analyze(nodeContext, symbols, engine, reported),
                     SyntaxKind.InvocationExpression);
             });
+        }
+
+        private static void AnalyzeHeuristically(
+            SyntaxNodeAnalysisContext context,
+            ConcurrentDictionary<(string RuleId, SyntaxTree? Tree, TextSpan Span), byte> reported)
+        {
+            var invocation = (InvocationExpressionSyntax)context.Node;
+            var methodName = invocation.Expression switch
+            {
+                MemberAccessExpressionSyntax memberAccess => memberAccess.Name.Identifier.ValueText,
+                IdentifierNameSyntax identifier => identifier.Identifier.ValueText,
+                _ => null
+            };
+
+            if (methodName is null)
+            {
+                return;
+            }
+
+            if (!FindSymbolIndex.IsFindQueryRootByName(methodName) && !FindSymbolIndex.IsFindTerminalByName(methodName))
+            {
+                return;
+            }
+
+            var location = invocation.GetLocation();
+            if (!reported.TryAdd((DiagnosticDescriptors.HeuristicFindUsage.Id, location.SourceTree, location.SourceSpan), 0))
+            {
+                return;
+            }
+
+            var properties = ImmutableDictionary.CreateBuilder<string, string?>();
+            properties.Add("Confidence", "Heuristic");
+
+            context.ReportDiagnostic(Diagnostic.Create(
+                DiagnosticDescriptors.HeuristicFindUsage,
+                location,
+                properties.ToImmutable(),
+                methodName));
         }
 
         private static void Analyze(
@@ -154,6 +203,7 @@ namespace OptiGraphMigrator.Analyzers
             }
 
             builder.Add(DiagnosticDescriptors.UnresolvedChain);
+            builder.Add(DiagnosticDescriptors.HeuristicFindUsage);
 
             return builder.ToImmutable();
         }

@@ -29,6 +29,24 @@ namespace OptiGraphMigrator.Analyzers
             isEnabledByDefault: true,
             helpLinkUri: HelpLinkBase + "OGM901.md");
 
+        /// <summary>
+        /// Reported instead of a fully-resolved rule match when Find symbols could not be
+        /// resolved from metadata (e.g. a legacy CMS 11 project scanned via the source-only
+        /// fallback loader) but the invocation's name still looks like Find usage. Findings
+        /// carry a <c>Confidence = Heuristic</c> property and should be treated as lower
+        /// confidence than semantically-resolved matches.
+        /// </summary>
+        public static readonly DiagnosticDescriptor HeuristicFindUsage = new DiagnosticDescriptor(
+            "OGM902",
+            "Possible Find usage detected heuristically",
+            "This call ('{0}') looks like Optimizely Search & Navigation (Find) usage, but EPiServer.Find " +
+            "references could not be resolved for this project, so it was matched by name only. Verify manually " +
+            "and see the Optimizely Graph migration guidance for '{0}'",
+            "OptiGraphMigrator.Heuristic",
+            DiagnosticSeverity.Info,
+            isEnabledByDefault: true,
+            helpLinkUri: HelpLinkBase + "OGM902.md");
+
         /// <summary>Gets or builds the descriptor for a declarative catalogue rule.</summary>
         public static DiagnosticDescriptor GetOrCreate(MigrationRule rule)
         {
