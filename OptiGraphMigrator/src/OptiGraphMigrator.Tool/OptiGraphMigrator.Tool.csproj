@@ -13,7 +13,7 @@
 		<RollForward>LatestMajor</RollForward>
 
 		<!-- Recommended for public NuGet.org publishing -->
-		<Version>1.0.0</Version>
+		<Version>1.1.0</Version>
 		<Authors>Graham Carr</Authors>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageProjectUrl>https://github.com/adayinthelifeofapro/OptiGraphMigrator</PackageProjectUrl>
